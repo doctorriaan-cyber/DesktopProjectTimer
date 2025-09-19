@@ -1,0 +1,2554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Basic Reset & Setup */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'Roboto Mono', monospace;
+
+      /* Dynamic Accent Colors - Default to Teal */
+      --accent-color-primary: #14b8a6;
+      --accent-color-light: #2dd4bf;
+      --accent-color-dark: #0d9488;
+      --accent-color-rgb: 20, 184, 166;
+
+      --red-500: #ef4444;
+      --red-600: #dc2626;
+
+      /* Dark Theme (Default) */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    #root {
+      max-width: 650px; /* Wider for desktop */
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+    }
+
+    .header-left, .header-center, .header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .header-left {
+        justify-content: flex-start;
+        flex: 1;
+    }
+    .header-center {
+        justify-content: center;
+    }
+    .header-right {
+        justify-content: flex-end;
+        flex: 1;
+    }
+
+    .header-search {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .search-criteria-text {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px; /* Adjust as needed */
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+    .icon-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .icon-button svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-secondary);
+      transition: fill 0.2s ease;
+    }
+
+    .sort-by-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-right: 0.25rem;
+    }
+
+    .sort-button {
+        background-color: transparent;
+        border: 1px solid;
+        padding: 0.5rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        color: var(--text-secondary);
+        border-color: var(--border);
+    }
+    .sort-button:hover:not(:disabled) {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+    }
+    .sort-button.active {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+    }
+    .sort-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .secondary-button, .search-header-button, .clear-search-button, .view-toggle-button {
+        background-color: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        height: 40px; /* Align height with save button */
+        white-space: nowrap;
+    }
+    .secondary-button:hover, .search-header-button:hover, .clear-search-button:hover, .view-toggle-button:hover {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+    }
+
+    .secondary-button.saved {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+    }
+
+    .clear-search-button {
+        border-color: var(--red-500);
+        color: var(--red-500);
+    }
+     .clear-search-button:hover {
+        border-color: var(--red-600);
+        color: var(--red-600);
+        background-color: rgba(220, 38, 38, 0.1);
+    }
+
+
+    .save-button {
+      background-color: var(--accent-color-primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      height: 40px; /* Align height */
+    }
+    .save-button:hover {
+      background-color: var(--accent-color-dark);
+    }
+    .save-button.saved {
+      background-color: var(--accent-color-dark);
+    }
+
+    .add-project-main-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+    }
+    .add-project-main-button svg {
+        width: 20px;
+        height: 20px;
+        fill: white;
+    }
+
+
+    /* Grouped Project List */
+    .project-list-grouped {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .section-details, .subsection-details {
+        list-style: none; /* No default marker */
+    }
+    .section-details > summary::-webkit-details-marker,
+    .subsection-details > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .section-summary {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-color-primary);
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border);
+        cursor: pointer;
+        list-style: none; /* For Firefox */
+        position: relative;
+        padding-left: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .subsection-summary {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        list-style: none; /* For Firefox */
+        position: relative;
+        padding-left: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .section-summary > span:first-child,
+    .subsection-summary > span:first-child {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .summary-details {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        margin-left: 1rem;
+        flex-shrink: 0;
+    }
+
+
+    .section-summary::before, .subsection-summary::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) rotate(0);
+        width: 0;
+        height: 0;
+        border-top: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        border-left: 8px solid var(--text-secondary);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    details[open] > summary::before {
+        transform: translateY(-50%) rotate(90deg);
+    }
+
+    .subsection-container {
+        padding-left: 1rem;
+        border-left: 2px solid var(--border);
+        margin-top: 1rem;
+    }
+
+
+    /* Project List */
+    .project-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .no-projects {
+        text-align: center;
+        margin-top: 4rem;
+        color: var(--text-secondary);
+    }
+
+
+    .project-item {
+      position: relative;
+      border-radius: 12px;
+      transition: background-color 0.3s ease, box-shadow 0.3s;
+      overflow: hidden;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .project-item-main {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      cursor: pointer;
+      transition: padding 0.3s ease;
+    }
+
+    .project-name-time-stack {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex-shrink: 1;
+        flex-basis: 25%;
+    }
+
+    .project-item-spacer {
+        flex-grow: 1;
+    }
+
+    .project-creation-date {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.75rem;
+      text-align: right;
+      width: 100%;
+    }
+
+    .project-name {
+      font-weight: 500;
+      font-size: 1.2rem;
+      text-align: left;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .project-notes-container {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .project-notes, .project-notes-preview {
+      font-size: 0.9rem;
+      width: 100%;
+      font-style: italic;
+      color: var(--text-secondary); 
+    }
+    .project-notes {
+      white-space: pre-wrap;
+      text-align: left;
+      font-style: normal;
+    }
+
+    .project-notes-preview {
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 1;
+      flex-basis: 40%;
+    }
+
+    .project-item.expanded .project-notes {
+      white-space: normal;
+      overflow: visible;
+    }
+
+
+    .project-time {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--accent-color-light);
+      text-align: left;
+    }
+
+
+    .icon-button.delete-button:hover svg { fill: var(--red-500); }
+    .icon-button.edit-button:hover svg,
+    .icon-button.add-time-button:hover svg { fill: var(--accent-color-light); }
+
+    .play-pause-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+    .play-pause-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .play-pause-button svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--accent-color-primary);
+      transition: fill 0.2s ease;
+    }
+    .play-pause-button.running svg {
+      fill: var(--red-500);
+    }
+
+
+    /* Color Pickers */
+    .project-color-picker {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .color-picker-display {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+    .project-color-picker:hover .color-picker-display,
+    .color-picker-main:hover .color-picker-display {
+        border-color: var(--accent-color-light);
+    }
+    .color-picker-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        border: none;
+    }
+
+    /* Compact View Styles */
+    .project-item.is-compact-mode:not(.expanded) .project-item-main {
+        padding: 0.5rem 1rem; /* Thinner */
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    /* Unstack name and time and treat them as direct flex children */
+    .project-item.is-compact-mode:not(.expanded) .project-name-time-stack {
+        display: contents;
+    }
+
+    .project-item.is-compact-mode:not(.expanded) .project-name {
+        font-size: 1.1rem;
+        flex-grow: 1; /* Allow name to fill available space */
+        min-width: 0; /* Prevent flexbox overflow issues */
+    }
+
+    .project-item.is-compact-mode:not(.expanded) .project-time {
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
+    /* Hide elements not needed in compact view */
+    .project-item.is-compact-mode:not(.expanded) .project-notes-preview,
+    .project-item.is-compact-mode:not(.expanded) .project-color-picker,
+    .project-item.is-compact-mode:not(.expanded) .project-item-spacer {
+        display: none;
+    }
+
+
+    /* Expanded Details & Time Log */
+    .project-item-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+      padding: 0 1rem;
+    }
+    .project-item.expanded .project-item-details {
+      max-height: 500px; /* Adjust as needed */
+      padding: 1rem;
+      border-top: 1px solid;
+      border-color: var(--border);
+    }
+
+    .project-item.expanded .project-notes-preview {
+        display: none;
+    }
+    .project-item.expanded .project-item-main {
+        justify-content: space-between;
+        cursor: default;
+    }
+
+    .project-item.expanded .project-item-spacer {
+        display: none;
+    }
+
+    .project-item.expanded .project-name-time-stack {
+        flex-grow: 1;
+        align-items: center;
+        cursor: pointer;
+    }
+    .project-item.expanded .project-name, 
+    .project-item.expanded .project-time {
+        font-size: 1.4rem;
+    }
+
+    .project-item.expanded .project-name {
+        text-align: center;
+    }
+
+    .time-log-container { margin-top: 1rem; }
+    .time-log-container h4 {
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+        font-size: 1rem;
+        color: var(--text-primary);
+    }
+
+    .time-log-list {
+      list-style: none;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 0.5rem; /* For scrollbar */
+    }
+
+    /* Custom Scrollbar */
+    .time-log-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    .time-log-list::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+      border-radius: 4px;
+    }
+    .time-log-list::-webkit-scrollbar-thumb {
+      background-color: var(--border);
+      border-radius: 4px;
+    }
+    .time-log-list::-webkit-scrollbar-thumb:hover {
+      background-color: #4b5a70;
+    }
+
+
+    .time-log-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.25rem;
+      font-size: 0.9rem;
+      gap: 0.5rem;
+    }
+    .time-log-item:not(:last-child) { 
+        border-bottom: 1px solid;
+        border-color: var(--border);
+    }
+
+    .log-info { flex-grow: 1; display: flex; align-items: center; gap: 1rem; min-width: 0; }
+    .log-details { display: flex; flex-direction: column; gap: 0.2rem; }
+    .log-date { font-weight: 500; }
+    .log-date.weekend-log { color: var(--accent-color-light); }
+
+    .log-method { 
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .log-duration { font-family: var(--font-mono); font-weight: 500; }
+    .log-actions { display: flex; align-items: center; }
+    .log-actions .icon-button svg { width: 18px; height: 18px; }
+    .log-actions .icon-button { padding: 0.3rem; }
+
+    .no-logs-message { 
+        font-size: 0.9rem; text-align: center; padding: 1rem 0;
+        color: var(--text-secondary);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+    .modal-content {
+      padding: 1.5rem;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      background-color: var(--bg-secondary);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .confirm-message {
+      margin-bottom: 1.5rem;
+      text-align: center;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid;
+      font-size: 1rem;
+      font-family: var(--font-sans);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background-color: var(--bg-primary);
+      border-color: var(--border);
+      color: var(--text-primary);
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent-color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    .time-range-inputs {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .time-range-inputs .form-group {
+        flex: 1;
+    }
+
+    .search-type-selector {
+        display: flex;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    .search-type-button {
+        flex: 1;
+        padding: 0.75rem;
+        background-color: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .search-type-button:not(:last-child) {
+        border-right: 1px solid var(--border);
+    }
+    .search-type-button.active {
+        background-color: var(--accent-color-primary);
+        color: white;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .modal-button {
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .modal-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .modal-button.primary {
+      background-color: var(--accent-color-primary);
+      color: white;
+    }
+    .modal-button.primary:hover:not(:disabled) {
+      background-color: var(--accent-color-dark);
+    }
+    .modal-button.danger {
+      background-color: var(--red-500);
+      color: white;
+    }
+    .modal-button.danger:hover {
+      background-color: var(--red-600);
+    }
+    .modal-button.secondary {
+      background-color: transparent;
+      color: var(--text-secondary);
+    }
+    .modal-button.secondary:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Export Modal Project List */
+    .export-project-list {
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      background-color: var(--bg-primary);
+    }
+    .export-project-list-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+    }
+    .export-project-list-item:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+    }
+    .export-project-list-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent-color-primary);
+      flex-shrink: 0;
+    }
+    .export-project-list-item label {
+      cursor: pointer;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Import Preview Modal */
+    .import-preview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      background-color: var(--bg-primary);
+    }
+    .import-preview-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .import-preview-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--accent-color-primary);
+      flex-shrink: 0;
+    }
+    .import-preview-item label {
+      cursor: pointer;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .import-preview-item label strong {
+        color: var(--text-primary);
+    }
+    .import-item-count, .import-item-details {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    /* Import Preview Project List */
+    .import-project-list {
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      background-color: var(--bg-primary);
+    }
+    .import-project-list-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+    }
+    .import-project-list-item:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+    }
+    .import-project-list-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent-color-primary);
+      flex-shrink: 0;
+    }
+    .import-project-label {
+      cursor: pointer;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      line-height: 1.3;
+      min-width: 0;
+    }
+    .import-project-details {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex-grow: 1;
+    }
+    .import-project-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .import-project-cats {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    .import-project-time {
+        font-family: var(--font-mono);
+        margin-left: auto;
+        white-space: nowrap;
+        color: var(--accent-color-light);
+        padding-left: 0.5rem;
+    }
+
+
+    /* Settings Page */
+    .settings-page {
+        padding: 1rem 0;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .settings-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    .settings-title {
+        text-align: center;
+        flex-grow: 1;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+        margin: 0; /* Reset margin */
+    }
+    .back-button {
+        position: absolute;
+        left: -0.5rem; /* Align with padding */
+    }
+    .settings-section {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .settings-section-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .settings-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .settings-item:not(:last-child) {
+        margin-bottom: 1.5rem;
+    }
+    .settings-item-label {
+        font-weight: 500;
+    }
+    .settings-item-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+    .settings-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .data-button {
+        background-color: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .data-button:hover:not(:disabled) {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+    }
+    .data-button.danger:hover:not(:disabled) {
+        border-color: var(--red-500);
+        color: var(--red-500);
+    }
+    .data-button input[type="file"] {
+        display: none;
+    }
+    .form-group.full-width {
+        width: 100%;
+    }
+
+    /* Color Picker with History */
+    .color-picker-with-history {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .color-picker-main-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .color-picker-main {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+    }
+
+    .color-confirm-button {
+        background-color: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.2s ease;
+    }
+    .color-confirm-button:hover {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+    }
+    .color-confirm-button svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+    }
+
+
+    .color-history-list {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 4px;
+        background-color: rgba(0,0,0,0.1);
+        border-radius: 16px;
+    }
+
+    .color-history-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+        background-clip: padding-box;
+    }
+
+    .color-history-dot:hover {
+        transform: scale(1.1);
+        border-color: var(--accent-color-light);
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.1.1/client"
+  }
+}
+</script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useCallback, useMemo } from 'react';
+    import { createRoot } from 'react-dom/client';
+
+    // --- INLINED CODE ---
+
+    // --- src/types.ts ---
+    // --- TYPE DEFINITIONS ---
+    // (TypeScript interfaces and types are used by the components below)
+    
+    // --- src/constants.ts ---
+    const LOCAL_STORAGE_KEYS = {
+      PROJECTS: 'project-timer-projects',
+      SECTIONS: 'project-timer-sections',
+      CATEGORY_LABELS: 'project-timer-category-labels',
+      GLOBAL_COLOR: 'project-timer-global-color',
+      BACKGROUND_COLOR: 'project-timer-background-color',
+      ACCENT_COLOR_HISTORY: 'project-timer-accent-color-history',
+      BACKGROUND_COLOR_HISTORY: 'project-timer-bg-color-history',
+      VIEW_MODE: 'project-timer-view-mode',
+    };
+    const DEFAULT_GLOBAL_COLOR = '#14b8a6'; // Teal
+    const DEFAULT_BACKGROUND_COLOR = '#0f172a'; // Dark Blue
+    const DEFAULT_CATEGORY_LABELS = { section: 'Company', subsection: 'Client' };
+    const MAX_COLOR_HISTORY = 10;
+
+    // --- src/utils/colors.ts ---
+    const lightenDarkenColor = (col, amt) => {
+        let usePound = false;
+        if (col[0] === "#") {
+            col = col.slice(1);
+            usePound = true;
+        }
+        const num = parseInt(col, 16);
+        let r = (num >> 16) + amt;
+        if (r > 255) r = 255;
+        else if (r < 0) r = 0;
+        let b = ((num >> 8) & 0x00FF) + amt;
+        if (b > 255) b = 255;
+        else if (b < 0) b = 0;
+        let g = (num & 0x0000FF) + amt;
+        if (g > 255) g = 255;
+        else if (g < 0) g = 0;
+        let rStr = r.toString(16).padStart(2, '0');
+        let bStr = b.toString(16).padStart(2, '0');
+        let gStr = g.toString(16).padStart(2, '0');
+        return (usePound ? "#" : "") + rStr + bStr + gStr;
+    };
+    const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    };
+    const getTextColorForBackground = (hexColor) => {
+        const rgb = hexToRgb(hexColor);
+        if (!rgb) return '#f8fafc'; // default to light text
+        // Formula for luminance
+        const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+        return luminance > 0.5 ? '#0f172a' : '#f8fafc'; // dark text on light bg, light text on dark bg
+    };
+
+    // --- src/utils/formatters.ts ---
+    const formatTime = (totalSeconds) => {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+      return [hours, minutes, seconds]
+        .map(val => val.toString().padStart(2, '0'))
+        .join(':');
+    };
+    const formatTimeDecimal = (totalSeconds) => {
+        if (totalSeconds === 0) return '0.00';
+        const hours = totalSeconds / 3600;
+        return hours.toFixed(2);
+    };
+    const formatCreationDate = (isoString) => {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    const formatLogDate = (isoString) => {
+      const date = new Date(isoString);
+      const day = date.getDay();
+      const isWeekend = (day === 6) || (day === 0); // 6 = Saturday, 0 = Sunday
+      const formattedDate = date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+      return { formattedDate, isWeekend };
+    };
+    const formatLogTime = (isoString) => {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    };
+    const formatDateForInput = (isoString) => {
+      if (!isoString) return '';
+      return isoString.split('T')[0]; // Gets YYYY-MM-DD
+    };
+    const formatTimeForInput = (isoString) => {
+        if (!isoString) return '';
+        const date = new Date(isoString);
+        // Pads single-digit hours/minutes with a leading zero
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`; // Gets HH:MM
+    };
+
+    // --- src/hooks/useLocalStorage.ts ---
+    const useLocalStorage = (key, initialValue) => {
+      const [storedValue, setStoredValue] = useState(() => {
+        try {
+          const item = window.localStorage.getItem(key);
+          return item ? JSON.parse(item) : initialValue;
+        } catch (error) {
+          console.error(error);
+          return initialValue;
+        }
+      });
+
+      const setValue = (value) => {
+        try {
+          const valueToStore = value instanceof Function ? value(storedValue) : value;
+          setStoredValue(valueToStore);
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      return [storedValue, setValue];
+    };
+
+    // --- src/components/icons.tsx ---
+    const PlusIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+    );
+    const PlayIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+    );
+    const PauseIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+    );
+    const TrashIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+        </svg>
+    );
+    const ClockPlusIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-13h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"/>
+        </svg>
+    );
+    const EditIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        </svg>
+    );
+    const SettingsIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+        </svg>
+    );
+    const BackIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+    );
+    const SearchIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+    );
+    const ViewCompactIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M3 5v14h18V5H3zm2 2h14v3H5V7zm0 5h14v5H5v-5z"/>
+        </svg>
+    );
+    const ViewDefaultIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M3 5v14h18V5H3zm2 2h14v10H5V7z"/>
+        </svg>
+    );
+    const CheckIcon = (props) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
+            <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+    );
+
+    // --- src/components/Modal.tsx ---
+    const Modal = ({ children }) => {
+      return (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            {children}
+          </div>
+        </div>
+      );
+    };
+
+    // --- src/components/ColorPickerWithHistory.tsx ---
+    const ColorPickerWithHistory = ({ id, color, setColor, colorHistory, setColorHistory }) => {
+        const [stagedColor, setStagedColor] = useState(color);
+        useEffect(() => {
+            setStagedColor(color);
+        }, [color]);
+        const handleConfirmColor = () => {
+            setColor(stagedColor);
+            setColorHistory(prev => {
+                const newHistory = [stagedColor, ...prev.filter(c => c !== stagedColor)];
+                return newHistory.slice(0, MAX_COLOR_HISTORY);
+            });
+        };
+        const handleHistoryClick = (historyColor) => {
+            setColor(historyColor);
+            setColorHistory(prev => {
+                const newHistory = [historyColor, ...prev.filter(c => c !== historyColor)];
+                return newHistory.slice(0, MAX_COLOR_HISTORY);
+            });
+        }
+        return (
+            <div className="color-picker-with-history">
+                <div className="color-picker-main-wrapper">
+                    <div className="color-picker-main" title="Select a color">
+                        <div className="color-picker-display" style={{ backgroundColor: stagedColor }}></div>
+                        <input
+                            id={id}
+                            type="color"
+                            className="color-picker-input"
+                            value={stagedColor}
+                            onChange={(e) => setStagedColor(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        onClick={handleConfirmColor}
+                        className="color-confirm-button"
+                        title="Confirm color"
+                        aria-label="Confirm selected color"
+                    >
+                        <CheckIcon />
+                    </button>
+                </div>
+                <div className="color-history-list" aria-label="Color History">
+                    {colorHistory.map((histColor, index) => (
+                        <button
+                            key={`${histColor}-${index}`}
+                            className="color-history-dot"
+                            style={{ backgroundColor: histColor }}
+                            onClick={() => handleHistoryClick(histColor)}
+                            title={`Set color to ${histColor}`}
+                            aria-label={`Set color to ${histColor}`}
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    // --- src/components/ConfirmDeleteModal.tsx ---
+    const ConfirmDeleteModal = ({ onConfirm, onCancel, itemName, message }) => (
+      <Modal>
+        <h2>Confirm Deletion</h2>
+        <div className="confirm-message">
+            {message ? message : <p>Are you sure you want to delete <strong>{itemName}</strong>? This action cannot be undone.</p>}
+        </div>
+        <div className="modal-actions">
+          <button onClick={onCancel} className="modal-button secondary">Cancel</button>
+          <button onClick={onConfirm} className="modal-button danger">Delete</button>
+        </div>
+      </Modal>
+    );
+
+    // --- src/components/EditProjectModal.tsx ---
+    const EditProjectModal = ({ project, onSave, onClose, sections, setSections, categoryLabels, allProjects }) => {
+      const [name, setName] = useState(project?.name || '');
+      const [notes, setNotes] = useState(project?.notes || '');
+      const [section, setSection] = useState(project?.section || '');
+      const [subsection, setSubsection] = useState(project?.subsection || '');
+      const subsectionSuggestions = useMemo(() => {
+        if (!section.trim()) return [];
+        const subsectionsForSection = allProjects
+          .filter(p => p.section === section.trim())
+          .map(p => p.subsection);
+        return [...new Set(subsectionsForSection)];
+      }, [section, allProjects]);
+      const handleSave = () => {
+        if (name.trim() === '') {
+          alert('Project name cannot be empty.');
+          return;
+        }
+        const finalSection = section.trim() === '' ? 'Uncategorized' : section.trim();
+        const finalSubsection = subsection.trim() === '' ? 'General' : subsection.trim();
+        onSave({
+          ...project,
+          id: project?.id || Date.now(),
+          name: name.trim(),
+          notes: notes.trim(),
+          section: finalSection,
+          subsection: finalSubsection,
+          createdAt: project?.createdAt || new Date().toISOString(),
+          timeSpent: project?.timeSpent || 0,
+          isRunning: project?.isRunning || false,
+          logs: project?.logs || [],
+          isExpanded: project?.isExpanded || false,
+          color: project?.color || DEFAULT_GLOBAL_COLOR,
+        });
+        if (finalSection !== 'Uncategorized' && !sections.includes(finalSection)) {
+            setSections(prev => [...prev, finalSection]);
+        }
+        onClose();
+      };
+      return (
+        <Modal>
+          <h2>{project ? 'Edit Project' : 'Add New Project'}</h2>
+          <div className="form-group">
+            <label htmlFor="projectName">Project Name</label>
+            <input id="projectName" type="text" value={name} onChange={(e) => setName(e.target.value)} className="form-input" placeholder=""/>
+          </div>
+          <div className="form-group">
+            <label htmlFor="projectSection">{categoryLabels.section}</label>
+            <input id="projectSection" type="text" value={section} onChange={(e) => setSection(e.target.value)} className="form-input" placeholder="" list="section-suggestions"/>
+            <datalist id="section-suggestions">
+                {sections.map(s => <option key={s} value={s} />)}
+            </datalist>
+          </div>
+          <div className="form-group">
+            <label htmlFor="projectSubsection">{categoryLabels.subsection}</label>
+            <input id="projectSubsection" type="text" value={subsection} onChange={(e) => setSubsection(e.target.value)} className="form-input" placeholder="" list="subsection-suggestions"/>
+            <datalist id="subsection-suggestions">
+                {subsectionSuggestions.map(s => <option key={s} value={s} />)}
+            </datalist>
+          </div>
+          <div className="form-group">
+            <label htmlFor="projectNotes">Notes</label>
+            <textarea id="projectNotes" value={notes} onChange={(e) => setNotes(e.target.value)} className="form-textarea" placeholder="Add any relevant notes here..."></textarea>
+          </div>
+          <div className="modal-actions">
+            <button onClick={onClose} className="modal-button secondary">Cancel</button>
+            <button onClick={handleSave} className="modal-button primary" disabled={name.trim() === ''}>Save</button>
+          </div>
+        </Modal>
+      );
+    };
+
+    // --- src/components/ExportModal.tsx ---
+    const ExportModal = ({ projects, onClose, onExport, categoryLabels }) => {
+      const [format, setFormat] = useState('json');
+      const [selectedIds, setSelectedIds] = useState(new Set());
+      const handleSelectAll = (checked) => {
+        if (checked) {
+          setSelectedIds(new Set(projects.map(p => p.id)));
+        } else {
+          setSelectedIds(new Set());
+        }
+      };
+      const handleSelectOne = (projectId, checked) => {
+        setSelectedIds(prev => {
+          const newSet = new Set(prev);
+          if (checked) {
+            newSet.add(projectId);
+          } else {
+            newSet.delete(projectId);
+          }
+          return newSet;
+        });
+      };
+      const handleExportClick = () => {
+        onExport(format, Array.from(selectedIds));
+        onClose();
+      };
+      useEffect(() => {
+        if (format === 'text' || format === 'csv') {
+          handleSelectAll(true);
+        }
+      }, [format]);
+      const isAllSelected = projects.length > 0 && selectedIds.size === projects.length;
+      const isExportDisabled = format !== 'json' && selectedIds.size === 0;
+      const showProjectList = format === 'text' || format === 'csv';
+      return (
+        <Modal>
+          <h2>Export Data</h2>
+          <div className="form-group">
+            <label>Export Format</label>
+            <div className="radio-group">
+              <label><input type="radio" name="format" value="json" checked={format === 'json'} onChange={() => setFormat('json')} /> JSON Backup</label>
+              <label><input type="radio" name="format" value="text" checked={format === 'text'} onChange={() => setFormat('text')} /> Text Report</label>
+              <label><input type="radio" name="format" value="csv" checked={format === 'csv'} onChange={() => setFormat('csv')} /> Excel (CSV)</label>
+            </div>
+          </div>
+          {showProjectList && (
+            <div className="form-group">
+                <label>Projects to Export ({selectedIds.size} selected)</label>
+                <div className="export-project-list">
+                     {projects.length > 0 ? (
+                        <>
+                            <div className="export-project-list-item">
+                               <input id="select-all" type="checkbox" checked={isAllSelected} onChange={(e) => handleSelectAll(e.target.checked)} />
+                               <label htmlFor="select-all"><strong>Select/Deselect All</strong></label>
+                            </div>
+                            {projects.map(p => (
+                                <div key={p.id} className="export-project-list-item">
+                                    <input id={`p-${p.id}`} type="checkbox" checked={selectedIds.has(p.id)} onChange={(e) => handleSelectOne(p.id, e.target.checked)} />
+                                    <label htmlFor={`p-${p.id}`}>{p.name}</label>
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <p className="no-projects">No projects to export.</p>
+                    )}
+                </div>
+            </div>
+          )}
+          <div className="modal-actions">
+            <button onClick={onClose} className="modal-button secondary">Cancel</button>
+            <button onClick={handleExportClick} className="modal-button primary" disabled={isExportDisabled}>Export</button>
+          </div>
+        </Modal>
+      );
+    };
+
+    // --- src/components/ImportPreviewModal.tsx ---
+    const ImportPreviewModal = ({ data, onClose, onConfirm }) => {
+        const [selections, setSelections] = useState({
+            selectedProjectIds: new Set(data.projects?.map(p => p.id) || []),
+            categoryLabels: true,
+            appearance: true,
+        });
+        const handleCheckboxChange = (key, checked) => {
+            setSelections(prev => ({ ...prev, [key]: checked }));
+        };
+        const handleProjectSelectAll = (checked) => {
+            setSelections(prev => ({
+                ...prev,
+                selectedProjectIds: checked ? new Set(data.projects?.map(p => p.id)) : new Set(),
+            }));
+        };
+        const handleProjectSelectOne = (projectId, checked) => {
+            setSelections(prev => {
+                const newSet = new Set(prev.selectedProjectIds);
+                if (checked) {
+                    newSet.add(projectId);
+                } else {
+                    newSet.delete(projectId);
+                }
+                return { ...prev, selectedProjectIds: newSet };
+            });
+        };
+        const handleConfirmClick = () => {
+            onConfirm(selections);
+        };
+        const hasData = (key) => {
+            return data[key] !== undefined && data[key] !== null;
+        };
+        const allProjectsSelected = data.projects ? selections.selectedProjectIds.size === data.projects.length : false;
+        return (
+            <Modal>
+                <h2>Import Preview</h2>
+                <p className="confirm-message">
+                    Select the data you want to import. Selected projects will be <strong>added</strong> to your existing project list. Unchecked items will be skipped.
+                </p>
+                <div className="import-preview-list">
+                     {hasData('categoryLabels') && (
+                        <div className="import-preview-item">
+                            <input
+                                type="checkbox"
+                                id="import-labels"
+                                checked={selections.categoryLabels}
+                                onChange={(e) => handleCheckboxChange('categoryLabels', e.target.checked)}
+                            />
+                            <label htmlFor="import-labels">
+                                <strong>Category Labels</strong>
+                                <span className="import-item-details">({data.categoryLabels?.section} / {data.categoryLabels?.subsection})</span>
+                            </label>
+                        </div>
+                    )}
+                    {(hasData('globalColor') || hasData('backgroundColor') || hasData('viewMode')) && (
+                         <div className="import-preview-item">
+                            <input
+                                type="checkbox"
+                                id="import-appearance"
+                                checked={selections.appearance}
+                                onChange={(e) => handleCheckboxChange('appearance', e.target.checked)}
+                            />
+                            <label htmlFor="import-appearance">
+                                <strong>Appearance Settings</strong>
+                                <span className="import-item-details">(Colors, View Mode)</span>
+                            </label>
+                        </div>
+                    )}
+                </div>
+                 {hasData('projects') && data.projects && data.projects.length > 0 && (
+                     <div className="form-group" style={{marginTop: '1.5rem'}}>
+                        <label>Projects to Import ({selections.selectedProjectIds.size} selected)</label>
+                        <div className="import-project-list">
+                            <div className="import-project-list-item">
+                               <input id="select-all-import" type="checkbox" checked={allProjectsSelected} onChange={(e) => handleProjectSelectAll(e.target.checked)} />
+                               <label htmlFor="select-all-import"><strong>Select/Deselect All Projects</strong></label>
+                            </div>
+                            {data.projects.map(p => (
+                                <div key={p.id} className="import-project-list-item">
+                                    <input id={`import-p-${p.id}`} type="checkbox" checked={selections.selectedProjectIds.has(p.id)} onChange={(e) => handleProjectSelectOne(p.id, e.target.checked)} />
+                                    <label htmlFor={`import-p-${p.id}`} className="import-project-label">
+                                        <div className="import-project-details">
+                                            <span className="import-project-name" title={p.name}>{p.name}</span>
+                                            <span className="import-project-cats">{p.section || 'Uncategorized'} / {p.subsection || 'General'}</span>
+                                        </div>
+                                        <span className="import-project-time">{formatTime(p.timeSpent)}</span>
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                 )}
+                <div className="modal-actions">
+                    <button onClick={onClose} className="modal-button secondary">Cancel</button>
+                    <button onClick={handleConfirmClick} className="modal-button primary">Confirm Import</button>
+                </div>
+            </Modal>
+        );
+    };
+
+    // --- src/components/Header.tsx ---
+    const Header = ({ onAddProject, onSettings, onSearch, searchCriteria, onClearSearch, sortCriteria, setSortCriteria, viewMode, setViewMode, projectCount }) => {
+        const getSearchCriteriaText = () => {
+            if (!searchCriteria) return '';
+            const { type, query, date } = searchCriteria;
+            if (type === 'date') return `Logs on: ${new Date(date + 'T12:00:00').toLocaleDateString()}`;
+            return `${type.charAt(0).toUpperCase() + type.slice(1)}: "${query}"`;
+        };
+        return (
+            <header className="header">
+                <div className="header-left">
+                    <button onClick={onAddProject} className="save-button add-project-main-button"><PlusIcon /> Add Project</button>
+                     <button onClick={() => setViewMode(viewMode === 'default' ? 'compact' : 'default')} className="icon-button" title={`Switch to ${viewMode === 'default' ? 'compact' : 'default'} view`}>
+                        {viewMode === 'default' ? <ViewCompactIcon /> : <ViewDefaultIcon />}
+                    </button>
+                </div>
+                <div className="header-center">
+                     {searchCriteria && (
+                        <div className="header-search">
+                            <span className="search-criteria-text" title={getSearchCriteriaText()}>{getSearchCriteriaText()}</span>
+                            <button onClick={onClearSearch} className="clear-search-button">Clear</button>
+                        </div>
+                    )}
+                </div>
+                <div className="header-right">
+                    <div title="Sort Projects">
+                        <select
+                            value={sortCriteria}
+                            onChange={(e) => setSortCriteria(e.target.value)}
+                            className="sort-button"
+                            disabled={projectCount === 0}
+                        >
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                            <option value="nameAsc">Name (A-Z)</option>
+                            <option value="nameDesc">Name (Z-A)</option>
+                            <option value="timeSpent">Time Spent</option>
+                        </select>
+                    </div>
+                    <button onClick={onSearch} className="icon-button" title="Search"><SearchIcon /></button>
+                    <button onClick={onSettings} className="icon-button" title="Settings"><SettingsIcon /></button>
+                </div>
+            </header>
+        );
+    };
+
+    // --- src/components/ManualTimeEntryModal.tsx ---
+    const ManualTimeEntryModal = ({ project, logToEdit, onSave, onClose }) => {
+        const [entryType, setEntryType] = useState(logToEdit?.manualType || 'duration');
+        const [logText, setLogText] = useState(logToEdit?.logText || '');
+        const [hours, setHours] = useState(logToEdit ? Math.floor(logToEdit.duration / 3600).toString() : '0');
+        const [minutes, setMinutes] = useState(logToEdit ? Math.floor((logToEdit.duration % 3600) / 60).toString() : '30');
+        const [date, setDate] = useState(formatDateForInput(logToEdit?.date || new Date().toISOString()));
+        const [startTime, setStartTime] = useState(formatTimeForInput(logToEdit?.startTime || new Date(Date.now() - 30 * 60000).toISOString()));
+        const [endTime, setEndTime] = useState(formatTimeForInput(logToEdit?.endTime || new Date().toISOString()));
+        const handleSave = () => {
+            let logEntry;
+            const logId = logToEdit?.id || Date.now();
+            const baseLog = {
+                id: logId,
+                method: 'manual',
+                logText: logText.trim(),
+                manualType: entryType,
+            };
+            if (entryType === 'duration') {
+                const totalSeconds = (parseInt(hours) || 0) * 3600 + (parseInt(minutes) || 0) * 60;
+                if (totalSeconds <= 0) {
+                    alert("Duration must be greater than zero.");
+                    return;
+                }
+                const now = new Date();
+                const start = new Date(now.getTime() - totalSeconds * 1000);
+                logEntry = {
+                    ...baseLog,
+                    date: now.toISOString(),
+                    startTime: start.toISOString(),
+                    endTime: now.toISOString(),
+                    duration: totalSeconds,
+                };
+            } else { // 'range'
+                const startDateTime = new Date(`${date}T${startTime}`);
+                const endDateTime = new Date(`${date}T${endTime}`);
+                if (startDateTime >= endDateTime) {
+                    alert("End time must be after start time.");
+                    return;
+                }
+                const duration = (endDateTime.getTime() - startDateTime.getTime()) / 1000;
+                logEntry = {
+                    ...baseLog,
+                    date: startDateTime.toISOString(),
+                    startTime: startDateTime.toISOString(),
+                    endTime: endDateTime.toISOString(),
+                    duration: duration,
+                };
+            }
+            onSave(project.id, logEntry);
+            onClose();
+        };
+        const isSaveDisabled = entryType === 'duration'
+            ? (parseInt(hours) || 0) <= 0 && (parseInt(minutes) || 0) <= 0
+            : !date || !startTime || !endTime || new Date(`${date}T${startTime}`) >= new Date(`${date}T${endTime}`);
+        return (
+            <Modal>
+                <h2>{logToEdit ? 'Edit Manual Entry' : 'Add Manual Time Entry'} for {project.name}</h2>
+                 <div className="form-group">
+                    <label>Entry Type</label>
+                    <div className="radio-group">
+                        <label>
+                            <input type="radio" name="entryType" value="duration" checked={entryType === 'duration'} onChange={() => setEntryType('duration')} />
+                            By Duration
+                        </label>
+                        <label>
+                            <input type="radio" name="entryType" value="range" checked={entryType === 'range'} onChange={() => setEntryType('range')} />
+                            By Time Range
+                        </label>
+                    </div>
+                </div>
+                {entryType === 'duration' ? (
+                    <div className="time-range-inputs">
+                        <div className="form-group">
+                            <label htmlFor="hours">Hours</label>
+                            <input id="hours" type="number" min="0" value={hours} onChange={e => setHours(e.target.value)} className="form-input"/>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="minutes">Minutes</label>
+                            <input id="minutes" type="number" min="0" max="59" value={minutes} onChange={e => setMinutes(e.target.value)} className="form-input"/>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="form-group">
+                            <label htmlFor="date">Date</label>
+                            <input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} className="form-input"/>
+                        </div>
+                        <div className="time-range-inputs">
+                            <div className="form-group">
+                                <label htmlFor="startTime">Start Time</label>
+                                <input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="form-input"/>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="endTime">End Time</label>
+                                <input id="endTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="form-input"/>
+                            </div>
+                        </div>
+                    </>
+                )}
+                 <div className="form-group">
+                    <label htmlFor="logText">Note (Optional)</label>
+                    <input id="logText" type="text" value={logText} onChange={(e) => setLogText(e.target.value)} className="form-input" placeholder="What did you work on?"/>
+                </div>
+                <div className="modal-actions">
+                    <button onClick={onClose} className="modal-button secondary">Cancel</button>
+                    <button onClick={handleSave} className="modal-button primary" disabled={isSaveDisabled}>Save</button>
+                </div>
+            </Modal>
+        );
+    };
+
+    // --- src/components/TimeLogItem.tsx ---
+    const TimeLogItem = React.memo(({ log, onDelete, onEdit }) => {
+        const { formattedDate, isWeekend } = formatLogDate(log.date);
+        return (
+            <li className="time-log-item">
+                <div className="log-info">
+                    <div className="log-details">
+                       <span className={`log-date ${isWeekend ? 'weekend-log' : ''}`}>{formattedDate}</span>
+                       <span className="log-method">
+                           {log.method === 'timer' ? 'Timer' : `Manual: ${formatLogTime(log.startTime)} - ${formatLogTime(log.endTime)}`}
+                       </span>
+                       {log.logText && <span className="log-method"><em>"{log.logText}"</em></span>}
+                    </div>
+                </div>
+                <div className="log-duration">{formatTime(log.duration)}</div>
+                <div className="log-actions">
+                     {log.method === 'manual' && (
+                        <button onClick={() => onEdit(log)} className="icon-button edit-button" title="Edit Log Entry">
+                            <EditIcon />
+                        </button>
+                    )}
+                    <button onClick={() => onDelete(log.id)} className="icon-button delete-button" title="Delete Log Entry">
+                        <TrashIcon />
+                    </button>
+                </div>
+            </li>
+        );
+    });
+
+    // --- src/components/ProjectItem.tsx ---
+    const ProjectItem = ({
+      project, onToggleTimer, onDelete, onEdit, onAddTime,
+      onToggleExpand, onUpdateColor, onDeleteLog, onEditLog, viewMode
+    }) => {
+      const [currentTime, setCurrentTime] = useState(Date.now());
+      useEffect(() => {
+        let interval = null;
+        if (project.isRunning) {
+          interval = window.setInterval(() => {
+            setCurrentTime(Date.now());
+          }, 1000);
+        }
+        return () => {
+          if (interval) {
+            clearInterval(interval);
+          }
+        };
+      }, [project.isRunning]);
+      const runningTime = project.isRunning && project.timerStartTime
+        ? Math.floor((currentTime - project.timerStartTime) / 1000)
+        : 0;
+      const totalTime = project.timeSpent + runningTime;
+      const handleEditLog = (log) => {
+          onEditLog(project.id, log);
+      }
+      const sortedLogs = useMemo(() => {
+        return [...project.logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      }, [project.logs]);
+      return (
+        <li className={`project-item ${project.isExpanded ? 'expanded' : ''} ${viewMode === 'compact' ? 'is-compact-mode' : ''}`}>
+          <div className="project-item-main" onClick={!project.isExpanded ? () => onToggleExpand(project.id) : undefined}>
+            <button onClick={(e) => { e.stopPropagation(); onToggleTimer(project.id); }} className={`play-pause-button ${project.isRunning ? 'running' : ''}`} title={project.isRunning ? "Pause Timer" : "Start Timer"}>
+                {project.isRunning ? <PauseIcon /> : <PlayIcon />}
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); onAddTime(project); }} className="icon-button add-time-button" title="Add Manual Time Entry"><ClockPlusIcon /></button>
+            <div className="project-name-time-stack" onClick={project.isExpanded ? (e) => { e.stopPropagation(); onToggleExpand(project.id); } : undefined}>
+                <h3 className="project-name">{project.name}</h3>
+                <div className="project-time" style={{ color: project.color }}>{formatTime(totalTime)}</div>
+            </div>
+            {project.notes && <p className="project-notes-preview">{project.notes}</p>}
+            <div className="project-item-spacer"></div>
+            <div className="project-color-picker" title="Change Project Color">
+                <div className="color-picker-display" style={{ backgroundColor: project.color }}></div>
+                <input
+                    type="color"
+                    className="color-picker-input"
+                    value={project.color}
+                    onChange={(e) => onUpdateColor(project.id, e.target.value)}
+                />
+            </div>
+            <button onClick={(e) => { e.stopPropagation(); onEdit(project); }} className="icon-button edit-button" title="Edit Project"><EditIcon /></button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(project.id); }} className="icon-button delete-button" title="Delete Project"><TrashIcon /></button>
+          </div>
+          <div className="project-item-details">
+            {project.notes && (
+                <div className="project-notes-container">
+                    <p className="project-notes">{project.notes}</p>
+                </div>
+            )}
+            <p className="project-creation-date">Created: {formatCreationDate(project.createdAt)}</p>
+            <div className="time-log-container">
+                <h4>Time Log</h4>
+                {sortedLogs.length > 0 ? (
+                    <ul className="time-log-list">
+                        {sortedLogs.map(log => (
+                            <TimeLogItem key={log.id} log={log} onDelete={(logId) => onDeleteLog(project.id, logId)} onEdit={handleEditLog} />
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="no-logs-message">No time has been logged for this project yet.</p>
+                )}
+            </div>
+          </div>
+        </li>
+      );
+    };
+
+    // --- src/components/ProjectList.tsx ---
+    const ProjectList = (props) => {
+        const groupedProjects = useMemo(() => {
+            return props.projects.reduce((acc, project) => {
+                const section = project.section || 'Uncategorized';
+                const subsection = project.subsection || 'General';
+                if (!acc[section]) {
+                    acc[section] = {};
+                }
+                if (!acc[section][subsection]) {
+                    acc[section][subsection] = [];
+                }
+                acc[section][subsection].push(project);
+                return acc;
+            }, {});
+        }, [props.projects]);
+        if (props.projects.length === 0) {
+            return <p className="no-projects">No projects yet. Click "Add Project" to start!</p>;
+        }
+        return (
+            <div className="project-list-grouped">
+                {Object.entries(groupedProjects).map(([sectionName, subsections]) => {
+                    const subsectionCount = Object.keys(subsections).length;
+                    const totalProjectsInSection = Object.values(subsections).reduce((total, projects) => total + projects.length, 0);
+                    const subsectionLabel = subsectionCount === 1 ? props.categoryLabels.subsection : `${props.categoryLabels.subsection}s`;
+                    return (
+                        <details key={sectionName} className="section-details" open>
+                            <summary className="section-summary">
+                                <span>{sectionName}</span>
+                                <span className="summary-details">
+                                    {subsectionLabel}: {subsectionCount}, Total Projects: {totalProjectsInSection}
+                                </span>
+                            </summary>
+                            <div className="section-content">
+                                {Object.entries(subsections).map(([subsectionName, projects]) => (
+                                    <div key={subsectionName} className="subsection-container">
+                                        <details className="subsection-details" open>
+                                            <summary className="subsection-summary">
+                                                <span>{subsectionName}</span>
+                                                <span className="summary-details">
+                                                    {projects.length} {projects.length === 1 ? 'Project' : 'Projects'}
+                                                </span>
+                                            </summary>
+                                            <ul className="project-list">
+                                                {projects.map(project => <ProjectItem key={project.id} project={project} {...props} />)}
+                                            </ul>
+                                        </details>
+                                    </div>
+                                ))}
+                            </div>
+                        </details>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    // --- src/components/SearchModal.tsx ---
+    const SearchModal = ({ onSearch, onClose, currentCriteria }) => {
+        const [searchType, setSearchType] = useState(currentCriteria?.type || 'name');
+        const [query, setQuery] = useState(currentCriteria?.query || '');
+        const [date, setDate] = useState(currentCriteria?.date || formatDateForInput(new Date().toISOString()));
+        const handleSearch = () => {
+            onSearch({ type: searchType, query: query.trim(), date });
+            onClose();
+        };
+        const isSearchDisabled = searchType !== 'date' && query.trim() === '';
+        return (
+            <Modal>
+                <h2>Search Projects / Logs</h2>
+                <div className="search-type-selector">
+                    <button className={`search-type-button ${searchType === 'name' ? 'active' : ''}`} onClick={() => setSearchType('name')}>By Name</button>
+                    <button className={`search-type-button ${searchType === 'notes' ? 'active' : ''}`} onClick={() => setSearchType('notes')}>By Notes</button>
+                    <button className={`search-type-button ${searchType === 'date' ? 'active' : ''}`} onClick={() => setSearchType('date')}>By Date</button>
+                </div>
+                {searchType === 'name' && (
+                    <div className="form-group">
+                        <label htmlFor="search-name">Project Name</label>
+                        <input id="search-name" type="text" value={query} onChange={(e) => setQuery(e.target.value)} className="form-input" placeholder="Enter project name..."/>
+                    </div>
+                )}
+                {searchType === 'notes' && (
+                    <div className="form-group">
+                        <label htmlFor="search-notes">Project or Log Notes</label>
+                        <input id="search-notes" type="text" value={query} onChange={(e) => setQuery(e.target.value)} className="form-input" placeholder="Enter keyword from notes..."/>
+                    </div>
+                )}
+                {searchType === 'date' && (
+                    <div className="form-group">
+                        <label htmlFor="search-date">Logs on Date</label>
+                        <input id="search-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="form-input"/>
+                    </div>
+                )}
+                <div className="modal-actions">
+                    <button onClick={onClose} className="modal-button secondary">Cancel</button>
+                    <button onClick={handleSearch} className="modal-button primary" disabled={isSearchDisabled}>Search</button>
+                </div>
+            </Modal>
+        );
+    };
+
+    // --- src/pages/SettingsPage.tsx ---
+    const SettingsPage = ({ 
+        onBack, categoryLabels, setCategoryLabels, onExport, onImport, onClear, 
+        globalColor, setGlobalColor, backgroundColor, setBackgroundColor,
+        accentColorHistory, setAccentColorHistory, backgroundColorHistory, setBackgroundColorHistory
+    }) => {
+        const [sectionLabel, setSectionLabel] = useState(categoryLabels.section);
+        const [subsectionLabel, setSubsectionLabel] = useState(categoryLabels.subsection);
+        const [isSaved, setIsSaved] = useState(false);
+        const handleSaveLabels = () => {
+            setCategoryLabels({
+                section: sectionLabel.trim() || DEFAULT_CATEGORY_LABELS.section,
+                subsection: subsectionLabel.trim() || DEFAULT_CATEGORY_LABELS.subsection
+            });
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2000);
+        };
+        return (
+            <div className="settings-page">
+                <div className="settings-header">
+                     <button onClick={onBack} className="icon-button back-button" title="Back to Projects"><BackIcon /></button>
+                     <h2 className="settings-title">Settings</h2>
+                </div>
+                <div className="settings-section">
+                    <h3 className="settings-section-title">Appearance</h3>
+                    <div className="settings-item">
+                        <label className="settings-item-label" htmlFor="global-color-input">Accent Color</label>
+                        <p className="settings-item-description">Choose the main accent color for buttons, timers, and highlights.</p>
+                        <ColorPickerWithHistory
+                            id="global-color-input"
+                            color={globalColor}
+                            setColor={setGlobalColor}
+                            colorHistory={accentColorHistory}
+                            setColorHistory={setAccentColorHistory}
+                        />
+                    </div>
+                    <div className="settings-item">
+                        <label className="settings-item-label" htmlFor="background-color-input">Background Color</label>
+                        <p className="settings-item-description">Choose the primary background color for the application.</p>
+                         <ColorPickerWithHistory
+                            id="background-color-input"
+                            color={backgroundColor}
+                            setColor={setBackgroundColor}
+                            colorHistory={backgroundColorHistory}
+                            setColorHistory={setBackgroundColorHistory}
+                        />
+                    </div>
+                </div>
+                <div className="settings-section">
+                    <h3 className="settings-section-title">Category Labels</h3>
+                    <p className="settings-item-description">Customize the labels used for project organization.</p>
+                    <div className="form-group full-width">
+                         <label htmlFor="sectionLabel">{categoryLabels.section} Label</label>
+                         <input id="sectionLabel" type="text" value={sectionLabel} onChange={(e) => setSectionLabel(e.target.value)} className="form-input" />
+                    </div>
+                     <div className="form-group full-width">
+                         <label htmlFor="subsectionLabel">{categoryLabels.subsection} Label</label>
+                         <input id="subsectionLabel" type="text" value={subsectionLabel} onChange={(e) => setSubsectionLabel(e.target.value)} className="form-input" />
+                    </div>
+                    <button onClick={handleSaveLabels} className={`secondary-button ${isSaved ? 'saved' : ''}`}>
+                        {isSaved ? 'Saved!' : 'Save Labels'}
+                    </button>
+                </div>
+                <div className="settings-section">
+                    <h3 className="settings-section-title">Data Management</h3>
+                    <div className="settings-item">
+                        <p className="settings-item-description">Export your data to a file, import from a backup, or clear all data.</p>
+                        <div className="settings-actions">
+                            <button onClick={onExport} className="data-button">Export Data</button>
+                            <label className="data-button">
+                               Import Data
+                               <input type="file" accept=".json" onChange={onImport} />
+                            </label>
+                            <button onClick={onClear} className="data-button danger">Clear All Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- src/App.tsx ---
+    const App = () => {
+      const [projects, setProjects] = useLocalStorage(LOCAL_STORAGE_KEYS.PROJECTS, []);
+      const [sections, setSections] = useLocalStorage(LOCAL_STORAGE_KEYS.SECTIONS, []);
+      const [categoryLabels, setCategoryLabels] = useLocalStorage(LOCAL_STORAGE_KEYS.CATEGORY_LABELS, DEFAULT_CATEGORY_LABELS);
+      const [globalColor, setGlobalColor] = useLocalStorage(LOCAL_STORAGE_KEYS.GLOBAL_COLOR, DEFAULT_GLOBAL_COLOR);
+      const [backgroundColor, setBackgroundColor] = useLocalStorage(LOCAL_STORAGE_KEYS.BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+      const [accentColorHistory, setAccentColorHistory] = useLocalStorage(LOCAL_STORAGE_KEYS.ACCENT_COLOR_HISTORY, []);
+      const [backgroundColorHistory, setBackgroundColorHistory] = useLocalStorage(LOCAL_STORAGE_KEYS.BACKGROUND_COLOR_HISTORY, []);
+      const [viewMode, setViewMode] = useLocalStorage(LOCAL_STORAGE_KEYS.VIEW_MODE, 'default');
+      const [modal, setModal] = useState(null);
+      const [selectedProject, setSelectedProject] = useState(null);
+      const [selectedLog, setSelectedLog] = useState(null);
+      const [logToDelete, setLogToDelete] = useState(null);
+      const [searchCriteria, setSearchCriteria] = useState(null);
+      const [sortCriteria, setSortCriteria] = useState('newest');
+      const [currentPage, setCurrentPage] = useState('main');
+      const [importPreviewData, setImportPreviewData] = useState(null);
+      useEffect(() => {
+        const rootStyle = document.documentElement.style;
+        const accentRgb = hexToRgb(globalColor);
+        rootStyle.setProperty('--accent-color-primary', globalColor);
+        rootStyle.setProperty('--accent-color-light', lightenDarkenColor(globalColor, 20));
+        rootStyle.setProperty('--accent-color-dark', lightenDarkenColor(globalColor, -20));
+        if (accentRgb) {
+            rootStyle.setProperty('--accent-color-rgb', `${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}`);
+        }
+        const primaryText = getTextColorForBackground(backgroundColor);
+        const isDarkBg = primaryText === '#f8fafc';
+        rootStyle.setProperty('--bg-primary', backgroundColor);
+        rootStyle.setProperty('--text-primary', primaryText);
+        if (isDarkBg) {
+            rootStyle.setProperty('--bg-secondary', lightenDarkenColor(backgroundColor, 15));
+            rootStyle.setProperty('--text-secondary', '#94a3b8');
+            rootStyle.setProperty('--border', lightenDarkenColor(backgroundColor, 25));
+        } else {
+            rootStyle.setProperty('--bg-secondary', lightenDarkenColor(backgroundColor, -15));
+            rootStyle.setProperty('--text-secondary', '#475569');
+            rootStyle.setProperty('--border', lightenDarkenColor(backgroundColor, -25));
+        }
+      }, [globalColor, backgroundColor]);
+      const handleAddOrUpdateProject = (projectData) => {
+        setProjects(prevProjects => {
+          const existingIndex = prevProjects.findIndex(p => p.id === projectData.id);
+          if (existingIndex > -1) {
+            const updatedProjects = [...prevProjects];
+            updatedProjects[existingIndex] = projectData;
+            return updatedProjects;
+          } else {
+            return [...prevProjects, projectData];
+          }
+        });
+      };
+      const handleDeleteProject = (id) => {
+        setProjects(prev => prev.filter(p => p.id !== id));
+        setModal(null);
+        setSelectedProject(null);
+      };
+      const handleToggleTimer = useCallback((id) => {
+        setProjects(prevProjects => prevProjects.map(p => {
+          if (p.id === id) {
+            if (p.isRunning) {
+              const elapsed = Math.floor((Date.now() - (p.timerStartTime || Date.now())) / 1000);
+              const newLog = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                method: 'timer',
+                startTime: new Date(p.timerStartTime).toISOString(),
+                endTime: new Date().toISOString(),
+                duration: elapsed,
+                logText: '',
+              };
+              return {
+                ...p,
+                isRunning: false,
+                timeSpent: p.timeSpent + elapsed,
+                timerStartTime: undefined,
+                logs: elapsed > 0 ? [...p.logs, newLog] : p.logs,
+              };
+            } else {
+              return { ...p, isRunning: true, timerStartTime: Date.now() };
+            }
+          }
+          return p;
+        }));
+      }, [setProjects]);
+      const handleToggleExpand = useCallback((id) => {
+          setProjects(prev => prev.map(p => p.id === id ? { ...p, isExpanded: !p.isExpanded } : p));
+      }, [setProjects]);
+      const handleUpdateColor = useCallback((id, color) => {
+          setProjects(prev => prev.map(p => p.id === id ? { ...p, color } : p));
+      }, [setProjects]);
+      const handleAddOrUpdateLog = (projectId, logEntry) => {
+          setProjects(prev => prev.map(p => {
+              if (p.id === projectId) {
+                  const existingLogIndex = p.logs.findIndex(l => l.id === logEntry.id);
+                  let newLogs;
+                  if (existingLogIndex > -1) {
+                      newLogs = [...p.logs];
+                      newLogs[existingLogIndex] = logEntry;
+                  } else {
+                      newLogs = [...p.logs, logEntry];
+                  }
+                  const newTimeSpent = newLogs.reduce((total, log) => total + log.duration, 0);
+                  return { ...p, logs: newLogs, timeSpent: newTimeSpent };
+              }
+              return p;
+          }));
+      };
+      const handleDeleteLog = (projectId, logId) => {
+          setProjects(prev => prev.map(p => {
+              if (p.id === projectId) {
+                  const newLogs = p.logs.filter(l => l.id !== logId);
+                  const newTimeSpent = newLogs.reduce((total, log) => total + log.duration, 0);
+                  return { ...p, logs: newLogs, timeSpent: newTimeSpent };
+              }
+              return p;
+          }));
+          setModal(null);
+          setLogToDelete(null);
+      };
+      const openEditModal = (project) => {
+        setSelectedProject(project);
+        setModal('editProject');
+      };
+      const openDeleteModal = (project) => {
+        setSelectedProject(project);
+        setModal('deleteProject');
+      };
+      const openManualTimeModal = (project) => {
+          setSelectedProject(project);
+          setSelectedLog(null);
+          setModal('manualTime');
+      };
+      const openEditLogModal = (projectId, log) => {
+          const project = projects.find(p => p.id === projectId);
+          if (project) {
+              setSelectedProject(project);
+              setSelectedLog(log);
+              setModal('manualTime');
+          }
+      };
+      const openDeleteLogModal = (projectId, logId) => {
+        setLogToDelete({ projectId, logId });
+        setModal('deleteLog');
+      };
+      const filteredProjects = useMemo(() => {
+        if (!searchCriteria) return projects;
+        const { type, query, date } = searchCriteria;
+        const lowerCaseQuery = query.toLowerCase();
+        return projects.filter(p => {
+            if (type === 'name') {
+                return p.name.toLowerCase().includes(lowerCaseQuery);
+            }
+            if (type === 'notes') {
+                const inProjectNotes = p.notes.toLowerCase().includes(lowerCaseQuery);
+                const inLogNotes = p.logs.some(log => log.logText.toLowerCase().includes(lowerCaseQuery));
+                return inProjectNotes || inLogNotes;
+            }
+            if (type === 'date') {
+                return p.logs.some(log => formatDateForInput(log.date) === date);
+            }
+            return true;
+        });
+      }, [projects, searchCriteria]);
+      const sortedAndFilteredProjects = useMemo(() => {
+          const projectsToSort = [...filteredProjects];
+          return projectsToSort.sort((a, b) => {
+              switch (sortCriteria) {
+                  case 'oldest':
+                      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                  case 'nameAsc':
+                      return a.name.localeCompare(b.name);
+                  case 'nameDesc':
+                      return b.name.localeCompare(a.name);
+                  case 'timeSpent':
+                      return b.timeSpent - a.timeSpent;
+                  case 'newest':
+                  default:
+                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+              }
+          });
+      }, [filteredProjects, sortCriteria]);
+      const triggerDownload = (filename, dataStr, type) => {
+            const dataUri = type + encodeURIComponent(dataStr);
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', filename);
+            linkElement.click();
+        };
+        const handleExport = (format, selectedProjectIds) => {
+            if (format === 'json') {
+                const dataStr = JSON.stringify({
+                    projects, sections, categoryLabels, globalColor,
+                    backgroundColor, accentColorHistory, backgroundColorHistory, viewMode,
+                }, null, 2);
+                triggerDownload('project_timer_backup.json', dataStr, 'data:application/json;charset=utf-8,');
+                return;
+            }
+            const projectsToExport = projects.filter(p => selectedProjectIds.includes(p.id));
+            if (format === 'text') {
+                let textContent = `Project Time Export\nGenerated on: ${new Date().toLocaleString()}\n\n`;
+                const grouped = projectsToExport.reduce((acc, p) => {
+                    const section = p.section || 'Uncategorized';
+                    if (!acc[section]) acc[section] = [];
+                    acc[section].push(p);
+                    return acc;
+                }, {});
+                for (const sectionName of Object.keys(grouped).sort()) {
+                    textContent += `${'='.repeat(40)}\n${categoryLabels.section}: ${sectionName}\n${'='.repeat(40)}\n\n`;
+                    const subsections = grouped[sectionName].reduce((acc, p) => {
+                        const subsection = p.subsection || 'General';
+                        if (!acc[subsection]) acc[subsection] = [];
+                        acc[subsection].push(p);
+                        return acc;
+                    }, {});
+                    for (const subName of Object.keys(subsections).sort()) {
+                        textContent += `  ${categoryLabels.subsection}: ${subName}\n  ${'-'.repeat(38)}\n`;
+                        subsections[subName].forEach(p => {
+                            textContent += `    Project: ${p.name}\n`;
+                            textContent += `    Total Time: ${formatTime(p.timeSpent)}\n`;
+                            if (p.notes) textContent += `    Notes: ${p.notes}\n`;
+                            if (p.logs.length > 0) {
+                                textContent += `    Time Logs:\n`;
+                                p.logs.forEach(log => {
+                                    textContent += `      - ${new Date(log.date).toLocaleDateString()}: ${formatTime(log.duration)} (${log.method})${log.logText ? ` - "${log.logText}"` : ''}\n`;
+                                });
+                            }
+                            textContent += '\n';
+                        });
+                    }
+                }
+                triggerDownload('project_time_export.txt', textContent, 'data:text/plain;charset=utf-8,');
+            }
+            if (format === 'csv') {
+                const escapeCsv = (str) => `"${String(str).replace(/"/g, '""')}"`;
+                const rows = [];
+                projectsToExport.forEach(p => {
+                    rows.push(escapeCsv(`Project: ${p.name}`));
+                    rows.push([
+                        escapeCsv(`${categoryLabels.section}: ${p.section}`),
+                        escapeCsv(`${categoryLabels.subsection}: ${p.subsection}`)
+                    ].join(','));
+                    rows.push([
+                        escapeCsv(`Total Time (HH:MM:SS): ${formatTime(p.timeSpent)}`),
+                        escapeCsv(`Total Time (Decimal Hours): ${formatTimeDecimal(p.timeSpent)}`)
+                    ].join(','));
+                    if (p.notes) {
+                        rows.push(escapeCsv(`Notes: ${p.notes}`));
+                    }
+                    if (p.logs.length > 0) {
+                        rows.push('');
+                        const logHeaders = [
+                            'Log Date', 'Log Duration (HH:MM:SS)', 'Log Duration (Decimal Hours)',
+                            'Log Method', 'Log Notes'
+                        ].map(escapeCsv).join(',');
+                        rows.push(logHeaders);
+                        p.logs.forEach(log => {
+                            const logRow = [
+                                escapeCsv(formatDateForInput(log.date)),
+                                escapeCsv(formatTime(log.duration)),
+                                escapeCsv(formatTimeDecimal(log.duration)),
+                                escapeCsv(log.method),
+                                escapeCsv(log.logText)
+                            ].join(',');
+                            rows.push(logRow);
+                        });
+                    }
+                    rows.push('');
+                });
+                const csvContent = rows.join('\n');
+                triggerDownload('project_time_export.csv', csvContent, 'data:text/csv;charset=utf-8,');
+            }
+        };
+        const handleConfirmImport = (selections) => {
+            if (!importPreviewData) return;
+            let importedSomething = false;
+            if (selections.selectedProjectIds.size > 0 && importPreviewData.projects) {
+                const projectsToImport = importPreviewData.projects.filter((p) =>
+                    selections.selectedProjectIds.has(p.id)
+                );
+                if (projectsToImport.length > 0) {
+                    const newProjects = projectsToImport.map((p, index) => ({
+                        ...p,
+                        id: Date.now() + index,
+                    }));
+                    const newSections = newProjects.map((p) => p.section).filter(Boolean);
+                    setProjects(prev => [...prev, ...newProjects]);
+                    setSections(prev => [...new Set([...prev, ...newSections])]);
+                    importedSomething = true;
+                }
+            }
+            if (selections.categoryLabels && importPreviewData.categoryLabels) {
+                setCategoryLabels(importPreviewData.categoryLabels);
+                importedSomething = true;
+            }
+            if (selections.appearance) {
+                if(importPreviewData.globalColor) { setGlobalColor(importPreviewData.globalColor); importedSomething = true; }
+                if(importPreviewData.backgroundColor) { setBackgroundColor(importPreviewData.backgroundColor); importedSomething = true; }
+                if(importPreviewData.accentColorHistory && Array.isArray(importPreviewData.accentColorHistory)) { setAccentColorHistory(importPreviewData.accentColorHistory); importedSomething = true; }
+                if(importPreviewData.backgroundColorHistory && Array.isArray(importPreviewData.backgroundColorHistory)) { setBackgroundColorHistory(importPreviewData.backgroundColorHistory); importedSomething = true; }
+                if(importPreviewData.viewMode) { setViewMode(importPreviewData.viewMode); importedSomething = true; }
+            }
+            if (importedSomething) {
+                alert("Data imported successfully based on your selections!");
+            } else {
+                alert("No data was selected for import.");
+            }
+            setModal(null);
+            setImportPreviewData(null);
+        };
+        const importData = (event) => {
+            const fileReader = new FileReader();
+            if (event.target.files && event.target.files[0]) {
+                fileReader.readAsText(event.target.files[0], "UTF-8");
+                fileReader.onload = e => {
+                    try {
+                        const data = JSON.parse(e.target?.result);
+                         if (data && data.projects && Array.isArray(data.projects)) {
+                            setImportPreviewData(data);
+                            setModal('importPreview');
+                        } else {
+                             alert("Import failed. The selected file does not appear to be a valid backup file.");
+                        }
+                    } catch (error) {
+                        alert("Error reading file. The file might be corrupted or not in JSON format.");
+                        console.error("Import error:", error);
+                    }
+                };
+                fileReader.onerror = (error) => {
+                    alert("Error reading file.");
+                    console.error("File reader error:", error);
+                };
+            }
+            event.target.value = '';
+        };
+        const handleClearAllData = () => {
+            setProjects([]);
+            setSections([]);
+            setCategoryLabels(DEFAULT_CATEGORY_LABELS);
+            setGlobalColor(DEFAULT_GLOBAL_COLOR);
+            setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
+            setAccentColorHistory([]);
+            setBackgroundColorHistory([]);
+            setViewMode('default');
+            alert("All data cleared.");
+            setCurrentPage('main');
+            setModal(null);
+        };
+        const openClearAllDataModal = () => {
+            setModal('clearAll');
+        };
+      return (
+        <>
+          {currentPage === 'main' && (
+            <>
+            <Header 
+                onAddProject={() => openEditModal(null)}
+                onSettings={() => setCurrentPage('settings')}
+                onSearch={() => setModal('search')}
+                searchCriteria={searchCriteria}
+                onClearSearch={() => setSearchCriteria(null)}
+                sortCriteria={sortCriteria}
+                setSortCriteria={setSortCriteria}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                projectCount={projects.length}
+            />
+            <main>
+                <ProjectList
+                  projects={sortedAndFilteredProjects}
+                  categoryLabels={categoryLabels}
+                  onToggleTimer={handleToggleTimer}
+                  onDelete={(id) => openDeleteModal(projects.find(p => p.id === id))}
+                  onEdit={openEditModal}
+                  onAddTime={openManualTimeModal}
+                  onToggleExpand={handleToggleExpand}
+                  onUpdateColor={handleUpdateColor}
+                  onDeleteLog={openDeleteLogModal}
+                  onEditLog={openEditLogModal}
+                  viewMode={viewMode}
+                />
+            </main>
+            </>
+          )}
+          {currentPage === 'settings' && (
+              <SettingsPage
+                onBack={() => setCurrentPage('main')}
+                categoryLabels={categoryLabels}
+                setCategoryLabels={setCategoryLabels}
+                onExport={() => setModal('export')}
+                onImport={importData}
+                onClear={openClearAllDataModal}
+                globalColor={globalColor}
+                setGlobalColor={setGlobalColor}
+                backgroundColor={backgroundColor}
+                setBackgroundColor={setBackgroundColor}
+                accentColorHistory={accentColorHistory}
+                setAccentColorHistory={setAccentColorHistory}
+                backgroundColorHistory={backgroundColorHistory}
+                setBackgroundColorHistory={setBackgroundColorHistory}
+              />
+          )}
+          {modal === 'editProject' && (
+            <EditProjectModal
+              project={selectedProject}
+              onSave={handleAddOrUpdateProject}
+              onClose={() => setModal(null)}
+              sections={sections}
+              setSections={setSections}
+              categoryLabels={categoryLabels}
+              allProjects={projects}
+            />
+          )}
+          {modal === 'deleteProject' && selectedProject && (
+            <ConfirmDeleteModal
+              itemName={selectedProject.name}
+              onConfirm={() => handleDeleteProject(selectedProject.id)}
+              onCancel={() => setModal(null)}
+            />
+          )}
+          {modal === 'manualTime' && selectedProject && (
+              <ManualTimeEntryModal
+                project={selectedProject}
+                logToEdit={selectedLog}
+                onSave={handleAddOrUpdateLog}
+                onClose={() => {
+                    setModal(null);
+                    setSelectedLog(null);
+                }}
+              />
+          )}
+          {modal === 'search' && (
+              <SearchModal
+                onSearch={(criteria) => setSearchCriteria(criteria)}
+                onClose={() => setModal(null)}
+                currentCriteria={searchCriteria}
+              />
+          )}
+          {modal === 'deleteLog' && logToDelete && (() => {
+              const projectForLogDelete = projects.find(p => p.id === logToDelete.projectId);
+              const logEntryForDelete = projectForLogDelete?.logs.find(l => l.id === logToDelete.logId);
+              const logItemName = logEntryForDelete
+                  ? `the time entry from ${new Date(logEntryForDelete.date).toLocaleDateString()} for ${formatTime(logEntryForDelete.duration)}`
+                  : 'this time entry';
+              return (
+                  <ConfirmDeleteModal
+                      itemName={logItemName}
+                      onConfirm={() => handleDeleteLog(logToDelete.projectId, logToDelete.logId)}
+                      onCancel={() => {
+                          setModal(null);
+                          setLogToDelete(null);
+                      }}
+                  />
+              );
+          })()}
+          {modal === 'clearAll' && (
+            <ConfirmDeleteModal
+              itemName={"ALL application data (projects, settings, etc.)"}
+              onConfirm={() => setModal('clearAllConfirm')}
+              onCancel={() => setModal(null)}
+            />
+          )}
+           {modal === 'clearAllConfirm' && (
+            <ConfirmDeleteModal
+              itemName={"everything permanently"}
+              message={
+                <p>
+                  This is your final confirmation. Are you absolutely sure you want to delete <strong>everything permanently</strong>? 
+                  All projects, settings, and colors will be lost.
+                </p>
+              }
+              onConfirm={handleClearAllData}
+              onCancel={() => setModal(null)}
+            />
+          )}
+           {modal === 'export' && (
+            <ExportModal
+              projects={projects}
+              onClose={() => setModal(null)}
+              onExport={handleExport}
+              categoryLabels={categoryLabels}
+            />
+          )}
+          {modal === 'importPreview' && importPreviewData && (
+              <ImportPreviewModal
+                  data={importPreviewData}
+                  onClose={() => {
+                      setModal(null);
+                      setImportPreviewData(null);
+                  }}
+                  onConfirm={handleConfirmImport}
+              />
+          )}
+        </>
+      );
+    };
+
+    // --- index.tsx (entry point) ---
+    const container = document.getElementById('root');
+    if (container) {
+        const root = createRoot(container);
+        root.render(<App />);
+    } else {
+        console.error("Fatal Error: The root element with ID 'root' was not found in the DOM. The application cannot be mounted.");
+    }
+  </script>
+</body>
+</html>
