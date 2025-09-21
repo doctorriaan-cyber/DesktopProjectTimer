@@ -1891,6 +1891,7 @@ const Calendar = ({ projects, onLogClick }) => {
     const [view, setView] = useState('month');
     const [selectedDate, setSelectedDate] = useState(null);
     const todayRef = useRef(null);
+    const dayViewScrollRef = useRef(null);
     const toLocalDateKey = (date) => {
         const year = date.getFullYear();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -1916,14 +1917,14 @@ const Calendar = ({ projects, onLogClick }) => {
         }
         return { year, month, monthName, days };
     }
-    const DayView = ({ selectedDate, logs, onLogClick }) => {
+    const DayView = ({ selectedDate, logs, onLogClick, scrollRef }) => {
         const hours = Array.from({ length: 24 }, (_, i) => i);
         return (
             React.createElement('div', { className: "calendar-day-view" },
                 React.createElement('div', { className: "day-view-header" },
                     selectedDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
                 ),
-                React.createElement('div', { className: "day-view-scroll-area" },
+                React.createElement('div', { ref: scrollRef, className: "day-view-scroll-area" },
                     React.createElement('div', { className: "day-view-timeline" },
                         hours.map(hour => (
                             React.createElement('div', { key: hour, className: "hour-block" },
@@ -2044,6 +2045,31 @@ const Calendar = ({ projects, onLogClick }) => {
             }, 100);
         }
     }, [view]);
+
+    useEffect(() => {
+        if (view === 'day' && selectedDate && dayViewScrollRef.current) {
+            const todayDate = new Date();
+            const selectedDateCopy = new Date(selectedDate);
+            todayDate.setHours(0, 0, 0, 0);
+            selectedDateCopy.setHours(0, 0, 0, 0);
+            if (selectedDateCopy.getTime() === todayDate.getTime()) {
+                const now = new Date();
+                const minutesFromMidnight = now.getHours() * 60 + now.getMinutes();
+                const containerHeight = dayViewScrollRef.current.clientHeight;
+                const scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 3));
+                setTimeout(() => dayViewScrollRef.current.scrollTo({
+                    top: scrollToPosition,
+                    behavior: 'smooth'
+                }), 100);
+            } else {
+                setTimeout(() => dayViewScrollRef.current.scrollTo({
+                    top: 8 * 60,
+                    behavior: 'auto'
+                }), 100);
+            }
+        }
+    }, [view, selectedDate]);
+
     return (
         React.createElement('div', { className: "calendar-wrapper" },
             React.createElement('div', { className: "calendar-header" },
@@ -2104,7 +2130,7 @@ const Calendar = ({ projects, onLogClick }) => {
                     )
                 )
             ) : selectedDate && (
-                React.createElement(DayView, { selectedDate: selectedDate, logs: logsForSelectedDate, onLogClick: onLogClick })
+                React.createElement(DayView, { selectedDate: selectedDate, logs: logsForSelectedDate, onLogClick: onLogClick, scrollRef: dayViewScrollRef })
             )
         )
     );
@@ -2693,36 +2719,31 @@ const App = () => {
 
   useEffect(() => {
     if (!focusedLog) return;
-
-    // Expand the project. This will cause a re-render.
     setProjects(prev => prev.map(p =>
         p.id === focusedLog.projectId ? { ...p, isExpanded: true } : p
     ));
-
-    // After the re-render, the DOM is updated. We use a timeout to
-    // ensure we're running this code after the paint.
     setTimeout(() => {
-        // Restore the calendar's scroll position.
         if (focusedLog.scrollTop !== undefined) {
             const scrollArea = document.querySelector('.day-view-scroll-area');
             if (scrollArea) {
                 scrollArea.scrollTop = focusedLog.scrollTop;
             }
         }
-
-        // Highlight the corresponding log in the project list.
         const logElement = document.getElementById(`log-item-${focusedLog.logId}`);
         if (logElement) {
+            logElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             logElement.classList.add('highlight');
             setTimeout(() => {
                 logElement.classList.remove('highlight');
             }, 2000);
+        } else {
+             const projectElement = document.getElementById(`project-item-${focusedLog.projectId}`);
+             if (projectElement) {
+                 projectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+             }
         }
-
-        // Clear the focused log to prevent this effect from re-running.
         setFocusedLog(null);
-    }, 0); // Use a minimal timeout to queue this for after the current render cycle.
-
+    }, 100);
   }, [focusedLog, setProjects]);
 
   const handleAddOrUpdateProject = (projectData) => {
