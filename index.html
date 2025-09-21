@@ -2605,6 +2605,16 @@ const SettingsPage = ({
     const [appName, setAppName] = useState(websiteName);
     const [isLabelsSaved, setIsLabelsSaved] = useState(false);
     const [isNameSaved, setIsNameSaved] = useState(false);
+
+    React.useEffect(() => {
+        if (globalColor && !accentColorHistory.includes(globalColor)) {
+            setAccentColorHistory(prev => [globalColor, ...prev].slice(0, MAX_COLOR_HISTORY));
+        }
+        if (backgroundColor && !backgroundColorHistory.includes(backgroundColor)) {
+            setBackgroundColorHistory(prev => [backgroundColor, ...prev].slice(0, MAX_COLOR_HISTORY));
+        }
+    }, []); // Run once when settings page loads to ensure current colors are in history.
+
     const handleSaveLabels = () => {
         setCategoryLabels({
             section: sectionLabel.trim() || DEFAULT_CATEGORY_LABELS.section,
