@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,12 +61,20 @@
         display: flex;
         gap: 1.5rem;
         height: 100%; /* Make container fill the available height from main */
-        /* align-items: stretch; is the default, which will make children fill height */
+        margin-top: 1rem; /* Gap between header and main content */
+    }
+
+    .projects-column {
+      display: flex;
+      flex-direction: column;
+      flex: 2;
+      min-width: 0;
     }
 
     .projects-container {
-        flex: 2;
+        flex: 1;
         min-width: 0;
+        min-height: 0; /* Important for scrolling in a flex column */
         overflow-y: auto; /* This is now the primary scrolling area */
         padding-right: 0.5rem; /* Give scrollbar some space */
     }
@@ -334,7 +341,6 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.5rem 0;
-      margin-bottom: 1.5rem;
       gap: 1rem;
       flex-shrink: 0; /* Prevent header from shrinking in the flex layout */
     }
@@ -555,6 +561,120 @@
         fill: white;
     }
 
+    /* Global Timer Display */
+    .global-timer-wrapper {
+        position: relative;
+        flex-shrink: 0;
+        margin-bottom: 1.5rem; /* Gap between timer and project list */
+    }
+
+    .global-timer-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        min-height: 60px; /* Reserve space at all times */
+        padding: 0.75rem 1rem;
+    }
+
+    .global-timer-placeholder {
+        width: 100%;
+        text-align: center;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .global-timer-placeholder:hover {
+        color: var(--accent-color-light);
+    }
+
+
+    .global-timer-active-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
+    }
+
+    .global-timer-display.visible .global-timer-active-content {
+        opacity: 1;
+    }
+
+    .global-timer-info strong {
+        font-weight: 700;
+        color: var(--accent-color-light);
+        margin: 0 0.25rem;
+    }
+
+    .global-timer-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .global-timer-time {
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .global-timer-stop-button {
+        background-color: var(--red-500);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .global-timer-stop-button:hover {
+        background-color: var(--red-600);
+    }
+    
+    /* Timer Dropdown */
+    .timer-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        z-index: 100;
+        max-height: 300px;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .timer-dropdown-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .timer-dropdown-item:hover {
+        background-color: var(--bg-primary);
+    }
+    .timer-dropdown-item:not(:last-child) {
+        border-bottom: 1px solid var(--border);
+    }
+    .no-projects-dropdown {
+        padding: 1rem;
+        text-align: center;
+        color: var(--text-secondary);
+    }
+
 
     /* Grouped Project List */
     .project-list-grouped {
@@ -677,16 +797,32 @@
       cursor: pointer;
       transition: padding 0.3s ease;
     }
+    
+    .project-item-left-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
+    }
+
+    .project-item-timer-buttons {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .project-item-left-controls .project-creation-date {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      line-height: 1;
+      white-space: nowrap;
+    }
 
     .project-name-time-stack {
         display: flex;
         flex-direction: column;
         min-width: 0;
         flex-shrink: 1;
-        flex-basis: 25%;
-    }
-
-    .project-item-spacer {
         flex-grow: 1;
     }
 
@@ -702,15 +838,44 @@
       font-size: 0.8rem;
       color: var(--text-secondary);
     }
+    
+    .project-name-wrapper {
+        display: flex;
+        align-items: flex-start; /* Aligns button to the top if text wraps */
+        gap: 0.5rem;
+    }
 
     .project-name {
       font-weight: 500;
       font-size: 1.2rem;
       text-align: left;
-      width: 100%;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    
+    .project-name.expanded {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip; /* or 'initial' */
+    }
+    
+    .more-less-button {
+        background: none;
+        border: none;
+        color: var(--accent-color-light);
+        cursor: pointer;
+        padding: 0;
+        margin-top: 0.2rem; /* Minor alignment adjustment */
+        font-size: 0.8rem;
+        font-weight: 500;
+        flex-shrink: 0; /* Prevent the button from shrinking */
+        text-decoration: underline;
+        line-height: 1.2;
+    }
+
+    .more-less-button:hover {
+        filter: brightness(1.2);
     }
 
     .project-notes-container {
@@ -728,6 +893,13 @@
       text-align: left;
       font-style: normal;
     }
+    
+    .project-time-container {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      flex-wrap: nowrap;
+    }
 
     .project-time {
       font-family: var(--font-mono);
@@ -737,10 +909,27 @@
       text-align: left;
     }
 
+    .project-timer-active {
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        background-color: var(--bg-primary);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+    }
+    .project-timer-active.visible {
+        opacity: 1;
+        visibility: visible;
+    }
 
     .icon-button.delete-button:hover svg { fill: var(--red-500); }
     .icon-button.edit-button:hover svg,
-    .icon-button.add-time-button:hover svg { fill: var(--accent-color-light); }
+    .icon-button.add-time-button:hover svg,
+    .icon-button.timer-button:hover svg { fill: var(--accent-color-light); }
 
 
     .project-actions {
@@ -1352,7 +1541,7 @@
 <body>
   <div id="root"></div>
   <script type="module">
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // --- CONSTANTS ---
@@ -1366,6 +1555,8 @@ const LOCAL_STORAGE_KEYS = {
   BACKGROUND_COLOR_HISTORY: 'project-timer-bg-color-history',
   WORK_AREA: 'project-timer-work-area',
   WEBSITE_NAME: 'project-timer-website-name',
+  EXPANSION_STATE: 'project-timer-expansion-state',
+  SCROLL_POSITION: 'project-timer-scroll-position',
 };
 const DEFAULT_WEBSITE_NAME = "Sharné's Time Manager";
 const DEFAULT_GLOBAL_COLOR = '#14b8a6'; // Teal
@@ -1472,7 +1663,10 @@ const formatTimeDecimal = (totalSeconds) => {
 const formatCreationDate = (isoString) => {
   if (!isoString) return '';
   const date = new Date(isoString);
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'short' });
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
 };
 
 const formatLogDate = (isoString) => {
@@ -1562,7 +1756,7 @@ const EditIcon = (props) => (
 );
 const SettingsIcon = (props) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", ...props },
-        React.createElement('path', { d: "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22-.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" })
+        React.createElement('path', { d: "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59-1.69.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" })
     )
 );
 const BackIcon = (props) => (
@@ -1673,7 +1867,7 @@ const ColorPickerWithHistory = ({ id, color, setColor, colorHistory, setColorHis
 };
 
 // -- Feature Components --
-const Header = ({ websiteName, onAddProject, onSettings, onSearch, searchCriteria, onClearSearch, sortCriteria, setSortCriteria, projectCount, activeWorkArea, setActiveWorkArea }) => {
+const Header = ({ websiteName, onAddProject, onSettings, onSearch, searchCriteria, onClearSearch, sortCriteria, setSortCriteria, projectCount, activeWorkArea, setActiveWorkArea, onConfirmSave, isConfirmingSave }) => {
     const getSearchCriteriaText = () => {
         if (!searchCriteria) return '';
         const { type, query, date } = searchCriteria;
@@ -1715,7 +1909,17 @@ const Header = ({ websiteName, onAddProject, onSettings, onSearch, searchCriteri
                     )
                 ),
                 React.createElement('button', { onClick: onSearch, className: "icon-button", title: "Search" }, React.createElement(SearchIcon, null)),
-                React.createElement('button', { onClick: onSettings, className: "icon-button", title: "Settings" }, React.createElement(SettingsIcon, null))
+                React.createElement('button', { onClick: onSettings, className: "icon-button", title: "Settings" }, React.createElement(SettingsIcon, null)),
+                React.createElement('button', {
+                    onClick: onConfirmSave,
+                    className: `secondary-button ${isConfirmingSave ? 'saved' : ''}`,
+                    disabled: isConfirmingSave,
+                    style: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }
+                },
+                    isConfirmingSave
+                        ? React.createElement(React.Fragment, null, React.createElement(CheckIcon, { style: { width: '18px', height: '18px', fill: 'currentColor' } }), 'Saved!')
+                        : 'Confirm Save'
+                )
             )
         )
     );
@@ -1729,17 +1933,15 @@ const TimeLogItem = React.memo(({ log, onDelete, onEdit }) => {
                 React.createElement('div', { className: "log-details" },
                    React.createElement('span', { className: `log-date ${isWeekend ? 'weekend-log' : ''}` }, formattedDate),
                    React.createElement('span', { className: "log-method" },
-                       log.method === 'timer' ? 'Timer' : `Manual: ${formatLogTime(log.startTime)} - ${formatLogTime(log.endTime)}`
+                       log.method === 'timer' ? `Timer: ${formatLogTime(log.startTime)} - ${formatLogTime(log.endTime)}` : `Manual: ${formatLogTime(log.startTime)} - ${formatLogTime(log.endTime)}`
                    ),
                    log.logText && React.createElement('span', { className: "log-method" }, React.createElement('em', null, `"${log.logText}"`))
                 )
             ),
             React.createElement('div', { className: "log-duration" }, formatTime(log.duration)),
             React.createElement('div', { className: "log-actions" },
-                 log.method === 'manual' && (
-                    React.createElement('button', { onClick: () => onEdit(log), className: "icon-button edit-button", title: "Edit Log Entry" },
-                        React.createElement(EditIcon, null)
-                    )
+                React.createElement('button', { onClick: () => onEdit(log), className: "icon-button edit-button", title: "Edit Log Entry" },
+                    React.createElement(EditIcon, null)
                 ),
                 React.createElement('button', { onClick: () => onDelete(log.id), className: "icon-button delete-button", title: "Delete Log Entry" },
                     React.createElement(TrashIcon, null)
@@ -1750,9 +1952,31 @@ const TimeLogItem = React.memo(({ log, onDelete, onEdit }) => {
 });
 
 const ProjectItem = ({
-  project, onDelete, onEdit, onAddTime,
-  onToggleExpand, onUpdateColor, onDeleteLog, onEditLog, onMoveProject
+  project, onDelete, onEdit, onAddTime, onToggleExpand, onUpdateColor, onDeleteLog,
+  onEditLog, onMoveProject, activeTimer, elapsedTime, onStartTimer, onStopTimer
 }) => {
+  const [isNameExpanded, setIsNameExpanded] = useState(false);
+  const [isNameTruncated, setIsNameTruncated] = useState(false);
+  const nameRef = useRef(null);
+  const isTimerRunning = activeTimer?.projectId === project.id;
+
+  useLayoutEffect(() => {
+    const checkOverflow = () => {
+        if (nameRef.current) {
+            const hasOverflow = nameRef.current.scrollWidth > nameRef.current.clientWidth;
+            if (isNameTruncated !== hasOverflow) {
+                setIsNameTruncated(hasOverflow);
+            }
+        }
+    };
+    const timeoutId = setTimeout(checkOverflow, 50);
+    window.addEventListener('resize', checkOverflow);
+    return () => {
+        clearTimeout(timeoutId);
+        window.removeEventListener('resize', checkOverflow);
+    };
+  }, [project.name, isNameTruncated]);
+  
   const totalTime = project.timeSpent;
   const handleEditLog = (log) => {
       onEditLog(project.id, log);
@@ -1760,6 +1984,7 @@ const ProjectItem = ({
   const sortedLogs = useMemo(() => {
     return [...project.logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [project.logs]);
+  
   const renderActionButtons = () => {
     switch (project.status) {
         case 'current':
@@ -1789,15 +2014,44 @@ const ProjectItem = ({
             return null;
     }
   };
+
   return (
     React.createElement('li', { id: `project-item-${project.id}`, className: `project-item ${project.isExpanded ? 'expanded' : ''}` },
       React.createElement('div', { className: "project-item-main", onClick: () => onToggleExpand(project.id) },
-        React.createElement('button', { onClick: (e) => { e.stopPropagation(); onAddTime(project); }, className: "icon-button add-time-button", title: "Add Manual Time Entry" }, React.createElement(ClockPlusIcon, null)),
-        React.createElement('div', { className: "project-name-time-stack" },
-            React.createElement('h3', { className: "project-name" }, project.name),
-            React.createElement('div', { className: "project-time", style: { color: project.color } }, formatTime(totalTime))
+        React.createElement('div', { className: "project-item-left-controls" },
+            React.createElement('p', { className: "project-creation-date", title: `Created on ${new Date(project.createdAt).toLocaleString()}` }, formatCreationDate(project.createdAt)),
+            React.createElement('div', { className: 'project-item-timer-buttons' },
+                React.createElement('button', {
+                    onClick: (e) => { e.stopPropagation(); isTimerRunning ? onStopTimer() : onStartTimer(project.id); },
+                    className: "icon-button timer-button",
+                    title: isTimerRunning ? "Stop Timer" : "Start Timer"
+                }, isTimerRunning ? React.createElement(PauseIcon, null) : React.createElement(PlayIcon, null)),
+                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onAddTime(project); }, className: "icon-button add-time-button", title: "Add Manual Time Entry" }, React.createElement(ClockPlusIcon, null))
+            )
         ),
-        React.createElement('div', { className: "project-item-spacer" }),
+        React.createElement('div', { className: "project-name-time-stack" },
+            React.createElement('div', { className: "project-name-wrapper" },
+                 React.createElement('h3', {
+                    ref: nameRef,
+                    className: `project-name ${isNameExpanded ? 'expanded' : ''}`,
+                    title: project.name
+                 }, project.name),
+                 isNameTruncated && React.createElement('button', {
+                     className: "more-less-button",
+                     onClick: (e) => {
+                         e.stopPropagation();
+                         setIsNameExpanded(!isNameExpanded);
+                     }
+                 }, isNameExpanded ? '[less]' : '[more]')
+            ),
+            React.createElement('div', { className: "project-time-container" },
+                React.createElement('div', { className: "project-time", style: { color: project.color } }, formatTime(totalTime)),
+                React.createElement('div', 
+                    { className: `project-timer-active ${isTimerRunning ? 'visible' : ''}` }, 
+                    `+ ${formatTime(isTimerRunning ? elapsedTime : 0)}`
+                )
+            )
+        ),
         React.createElement('div', { className: "project-actions" },
             renderActionButtons()
         ),
@@ -1821,7 +2075,6 @@ const ProjectItem = ({
             )
         ),
         React.createElement('div', { className: "project-dates-container" },
-            React.createElement('p', { className: "project-creation-date" }, "Created: ", formatCreationDate(project.createdAt)),
             project.readyForInvoicingAt && (
                 React.createElement('p', { className: "project-creation-date" }, "Ready for Invoicing: ", formatCreationDate(project.readyForInvoicingAt))
             ),
@@ -1847,6 +2100,24 @@ const ProjectItem = ({
 };
 
 const ProjectList = (props) => {
+    const { projects, categoryLabels, expansionState, setExpansionState } = props;
+
+    const handleToggle = useCallback((type, sectionName, subsectionName = null) => {
+        setExpansionState(prev => {
+            const newState = JSON.parse(JSON.stringify(prev)); // Deep copy
+            if (type === 'section') {
+                if (!newState[sectionName]) newState[sectionName] = {};
+                // Default to open (true), so toggling makes it false.
+                newState[sectionName].__isOpen = !(newState[sectionName].__isOpen ?? true);
+            } else if (type === 'subsection' && subsectionName) {
+                if (!newState[sectionName]) newState[sectionName] = { __isOpen: true };
+                // Default to open (true), so toggling makes it false.
+                newState[sectionName][subsectionName] = !(newState[sectionName][subsectionName] ?? true);
+            }
+            return newState;
+        });
+    }, [setExpansionState]);
+
     const groupedProjects = useMemo(() => {
         return props.projects.reduce((acc, project) => {
             const section = project.section || 'Uncategorized';
@@ -1870,19 +2141,30 @@ const ProjectList = (props) => {
                 const subsectionCount = Object.keys(subsections).length;
                 const totalProjectsInSection = Object.values(subsections).reduce((total, projects) => total + projects.length, 0);
                 const subsectionLabel = subsectionCount === 1 ? props.categoryLabels.subsection : `${props.categoryLabels.subsection}s`;
+                const isSectionOpen = expansionState[sectionName]?.__isOpen ?? true; // Default to open
+
                 return (
-                    React.createElement('details', { key: sectionName, className: "section-details", open: true },
-                        React.createElement('summary', { className: "section-summary" },
+                    React.createElement('details', {
+                        key: sectionName,
+                        className: "section-details",
+                        open: isSectionOpen,
+                    },
+                        React.createElement('summary', { className: "section-summary", onClick: (e) => { e.preventDefault(); handleToggle('section', sectionName); } },
                             React.createElement('span', null, sectionName),
                             React.createElement('span', { className: "summary-details" },
                                 `${subsectionLabel}: ${subsectionCount}, Total Projects: ${totalProjectsInSection}`
                             )
                         ),
                         React.createElement('div', { className: "section-content" },
-                            Object.entries(subsections).map(([subsectionName, projects]) => (
+                            Object.entries(subsections).map(([subsectionName, projects]) => {
+                                const isSubsectionOpen = expansionState[sectionName]?.[subsectionName] ?? true; // Default to open
+                                return (
                                 React.createElement('div', { key: subsectionName, className: "subsection-container" },
-                                    React.createElement('details', { className: "subsection-details", open: true },
-                                        React.createElement('summary', { className: "subsection-summary" },
+                                    React.createElement('details', {
+                                        className: "subsection-details",
+                                        open: isSubsectionOpen,
+                                     },
+                                        React.createElement('summary', { className: "subsection-summary", onClick: (e) => { e.preventDefault(); handleToggle('subsection', sectionName, subsectionName); } },
                                             React.createElement('span', null, subsectionName),
                                             React.createElement('span', { className: "summary-details" },
                                                 `${projects.length} ${projects.length === 1 ? 'Project' : 'Projects'}`
@@ -1893,7 +2175,8 @@ const ProjectList = (props) => {
                                         )
                                     )
                                 )
-                            ))
+                                )
+                            })
                         )
                     )
                 );
@@ -2714,6 +2997,8 @@ const App = () => {
   const [backgroundColorHistory, setBackgroundColorHistory] = useLocalStorage(LOCAL_STORAGE_KEYS.BACKGROUND_COLOR_HISTORY, []);
   const [activeWorkArea, setActiveWorkArea] = useLocalStorage(LOCAL_STORAGE_KEYS.WORK_AREA, 'current');
   const [websiteName, setWebsiteName] = useLocalStorage(LOCAL_STORAGE_KEYS.WEBSITE_NAME, DEFAULT_WEBSITE_NAME);
+  const [expansionState, setExpansionState] = useLocalStorage(LOCAL_STORAGE_KEYS.EXPANSION_STATE, {});
+  const [scrollPosition, setScrollPosition] = useLocalStorage(LOCAL_STORAGE_KEYS.SCROLL_POSITION, 0);
   
   const [modal, setModal] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -2724,8 +3009,116 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState('main');
   const [importPreviewData, setImportPreviewData] = useState(null);
   const [focusedLog, setFocusedLog] = useState(null);
+  const [focusedProject, setFocusedProject] = useState(null);
+  const [activeTimer, setActiveTimer] = useState(null); // e.g., { projectId: number, startTime: number }
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isTimerDropdownOpen, setIsTimerDropdownOpen] = useState(false);
+  const [isConfirmingSave, setIsConfirmingSave] = useState(false);
+  
   const dayViewScrollTopRef = useRef(0);
+  const projectsContainerRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
+  const timerWrapperRef = useRef(null);
 
+  const handleConfirmSave = () => {
+    // useLocalStorage already keeps the data saved in real-time.
+    // This button is for user feedback and peace of mind.
+    setIsConfirmingSave(true);
+    setTimeout(() => setIsConfirmingSave(false), 2000);
+  };
+
+  useEffect(() => {
+    if (!activeTimer) {
+      setElapsedTime(0);
+      return;
+    }
+    const intervalId = setInterval(() => {
+        const seconds = Math.floor((Date.now() - activeTimer.startTime) / 1000);
+        setElapsedTime(seconds);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [activeTimer]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (timerWrapperRef.current && !timerWrapperRef.current.contains(event.target)) {
+            setIsTimerDropdownOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleAddOrUpdateLog = (projectId, logEntry) => {
+      setProjects(prev => prev.map(p => {
+          if (p.id === projectId) {
+              const existingLogIndex = p.logs.findIndex(l => l.id === logEntry.id);
+              let newLogs;
+              if (existingLogIndex > -1) {
+                  newLogs = [...p.logs];
+                  newLogs[existingLogIndex] = logEntry;
+              } else {
+                  newLogs = [...p.logs, logEntry];
+              }
+              const newTimeSpent = newLogs.reduce((total, log) => total + log.duration, 0);
+              return { ...p, logs: newLogs, timeSpent: newTimeSpent };
+          }
+          return p;
+      }));
+  };
+
+  const handleStopTimer = () => {
+    const timerToStop = activeTimer;
+    if (!timerToStop) return;
+
+    const endTime = Date.now();
+    const duration = Math.round((endTime - timerToStop.startTime) / 1000);
+
+    if (duration > 0) {
+        const newLog = {
+            id: Date.now(),
+            date: new Date(timerToStop.startTime).toISOString(),
+            method: 'timer',
+            startTime: new Date(timerToStop.startTime).toISOString(),
+            endTime: new Date(endTime).toISOString(),
+            duration: duration,
+            logText: '',
+        };
+        handleAddOrUpdateLog(timerToStop.projectId, newLog);
+    }
+    setActiveTimer(null);
+  };
+
+  const handleStartTimer = (projectId) => {
+    const timerToStop = activeTimer;
+    if (timerToStop) {
+        const endTime = Date.now();
+        const duration = Math.round((endTime - timerToStop.startTime) / 1000);
+        if (duration > 0) {
+            const newLog = {
+                id: Date.now(),
+                date: new Date(timerToStop.startTime).toISOString(),
+                method: 'timer',
+                startTime: new Date(timerToStop.startTime).toISOString(),
+                endTime: new Date(endTime).toISOString(),
+                duration: duration,
+                logText: '',
+            };
+            handleAddOrUpdateLog(timerToStop.projectId, newLog);
+        }
+    }
+    setActiveTimer({ projectId, startTime: Date.now() });
+  };
+  
+  const handleDropdownStartTimer = (projectId) => {
+    handleStartTimer(projectId);
+    setFocusedProject(projectId);
+    setIsTimerDropdownOpen(false);
+  };
+  
   useEffect(() => {
     document.title = websiteName;
   }, [websiteName]);
@@ -2767,30 +3160,93 @@ const App = () => {
     };
   }, [currentPage]);
 
+  // Restore scroll position when returning to the main page
   useEffect(() => {
-    if (!focusedLog) return;
+    if (currentPage === 'main' && projectsContainerRef.current) {
+        projectsContainerRef.current.scrollTop = scrollPosition;
+    }
+  }, [currentPage]);
+
+  // Debounced scroll handler to save position
+  const handleScroll = useCallback(() => {
+    if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+    }
+    if (projectsContainerRef.current) {
+        const currentScrollPos = projectsContainerRef.current.scrollTop;
+        scrollTimeoutRef.current = setTimeout(() => {
+            setScrollPosition(currentScrollPos);
+        }, 250);
+    }
+  }, [setScrollPosition]);
+
+  // Cleanup scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const focusOnItem = useCallback((projectId, logId = null) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
     
-    setProjects(prev => prev.map(p =>
-        p.id === focusedLog.projectId ? { ...p, isExpanded: true } : p
-    ));
+    // Ensure the project itself is expanded to show the log list
+    setProjects(prevProjects => prevProjects.map(p => {
+      if (p.id === projectId) {
+        return { ...p, isExpanded: true };
+      }
+      return p;
+    }));
+    
+    // Ensure the containing section and subsection are open
+    setExpansionState(prev => {
+        const newExpansionState = JSON.parse(JSON.stringify(prev));
+        const sectionName = project.section || 'Uncategorized';
+        const subsectionName = project.subsection || 'General';
+        if (!newExpansionState[sectionName]) {
+            newExpansionState[sectionName] = {};
+        }
+        newExpansionState[sectionName].__isOpen = true;
+        newExpansionState[sectionName][subsectionName] = true;
+        return newExpansionState;
+    });
 
     setTimeout(() => {
-        const logElement = document.getElementById(`log-item-${focusedLog.logId}`);
-        if (logElement) {
-            logElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            logElement.classList.add('highlight');
-            setTimeout(() => {
-                logElement.classList.remove('highlight');
-            }, 2000);
-        } else {
-             const projectElement = document.getElementById(`project-item-${focusedLog.projectId}`);
-             if (projectElement) {
-                 projectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-             }
+        let element;
+        if (logId) {
+            element = document.getElementById(`log-item-${logId}`);
         }
-        setFocusedLog(null);
+        if (!element) {
+            element = document.getElementById(`project-item-${projectId}`);
+        }
+
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (logId) {
+                 element.classList.add('highlight');
+                setTimeout(() => element.classList.remove('highlight'), 2000);
+            }
+        }
     }, 150);
-  }, [focusedLog, setProjects]);
+  }, [projects, setProjects, setExpansionState]);
+
+  useEffect(() => {
+    if (focusedLog) {
+      focusOnItem(focusedLog.projectId, focusedLog.logId);
+      setFocusedLog(null);
+    }
+  }, [focusedLog, focusOnItem]);
+  
+  useEffect(() => {
+    if (focusedProject) {
+        focusOnItem(focusedProject);
+        setFocusedProject(null);
+    }
+  }, [focusedProject, focusOnItem]);
+
 
   const handleLogClick = (projectId, logId) => {
       const project = projects.find(p => p.id === projectId);
@@ -2848,24 +3304,6 @@ const App = () => {
       setProjects(prev => prev.map(p => p.id === id ? { ...p, color } : p));
   }, [setProjects]);
   
-  const handleAddOrUpdateLog = (projectId, logEntry) => {
-      setProjects(prev => prev.map(p => {
-          if (p.id === projectId) {
-              const existingLogIndex = p.logs.findIndex(l => l.id === logEntry.id);
-              let newLogs;
-              if (existingLogIndex > -1) {
-                  newLogs = [...p.logs];
-                  newLogs[existingLogIndex] = logEntry;
-              } else {
-                  newLogs = [...p.logs, logEntry];
-              }
-              const newTimeSpent = newLogs.reduce((total, log) => total + log.duration, 0);
-              return { ...p, logs: newLogs, timeSpent: newTimeSpent };
-          }
-          return p;
-      }));
-  };
-
   const handleDeleteLog = (projectId, logId) => {
       setProjects(prev => prev.map(p => {
           if (p.id === projectId) {
@@ -3147,43 +3585,100 @@ const App = () => {
     const openClearAllDataModal = () => {
         setModal('clearAll');
     };
+    
+    const activeProjectName = useMemo(() => {
+        if (!activeTimer) return '';
+        const project = projects.find(p => p.id === activeTimer.projectId);
+        return project ? project.name : '...';
+    }, [activeTimer, projects]);
+
+    const currentProjects = useMemo(() => {
+        return projects.filter(p => p.status === 'current');
+    }, [projects]);
 
   return (
     React.createElement(React.Fragment, null,
       currentPage === 'main' && (
         React.createElement(React.Fragment, null,
-        React.createElement(Header, {
-            websiteName: websiteName,
-            onAddProject: () => openEditModal(null),
-            onSettings: () => setCurrentPage('settings'),
-            onSearch: () => setModal('search'),
-            searchCriteria: searchCriteria,
-            onClearSearch: () => setSearchCriteria(null),
-            sortCriteria: sortCriteria,
-            setSortCriteria: setSortCriteria,
-            projectCount: projects.length,
-            activeWorkArea: activeWorkArea,
-            setActiveWorkArea: setActiveWorkArea
-        }),
-        React.createElement('main', { className: "main-view-container" },
-            React.createElement('div', { className: "projects-container" },
-                React.createElement(ProjectList, {
-                  projects: sortedAndFilteredProjects,
-                  categoryLabels: categoryLabels,
-                  onDelete: (id) => openDeleteModal(projects.find(p => p.id === id)),
-                  onEdit: openEditModal,
-                  onAddTime: openManualTimeModal,
-                  onToggleExpand: handleToggleExpand,
-                  onUpdateColor: handleUpdateColor,
-                  onDeleteLog: openDeleteLogModal,
-                  onEditLog: openEditLogModal,
-                  onMoveProject: handleMoveProject
-                })
-            ),
-            React.createElement('div', { className: "calendar-container" },
-                React.createElement(Calendar, { projects: projects, onLogClick: handleLogClick, dayViewScrollTopRef: dayViewScrollTopRef })
+            React.createElement(Header, {
+                websiteName: websiteName,
+                onAddProject: () => openEditModal(null),
+                onSettings: () => setCurrentPage('settings'),
+                onSearch: () => setModal('search'),
+                searchCriteria: searchCriteria,
+                onClearSearch: () => setSearchCriteria(null),
+                sortCriteria: sortCriteria,
+                setSortCriteria: setSortCriteria,
+                projectCount: projects.length,
+                activeWorkArea: activeWorkArea,
+                setActiveWorkArea: setActiveWorkArea,
+                onConfirmSave: handleConfirmSave,
+                isConfirmingSave: isConfirmingSave
+            }),
+            React.createElement('main', { className: "main-view-container" },
+                React.createElement('div', { className: "projects-column" },
+                    React.createElement('div', { ref: timerWrapperRef, className: "global-timer-wrapper" },
+                        React.createElement('div', { className: `global-timer-display ${activeTimer ? 'visible' : ''}` },
+                          !activeTimer ? (
+                            React.createElement('div', { className: 'global-timer-placeholder', onClick: () => setIsTimerDropdownOpen(prev => !prev) }, "Click to start a timer")
+                          ) : (
+                            React.createElement('div', { className: 'global-timer-active-content' },
+                                React.createElement('span', { className: 'global-timer-info' },
+                                "Timer running for ",
+                                React.createElement('strong', null, activeProjectName)
+                                ),
+                                React.createElement('div', { className: 'global-timer-controls' },
+                                React.createElement('span', { className: 'global-timer-time' }, formatTime(elapsedTime)),
+                                React.createElement('button', { onClick: handleStopTimer, className: 'global-timer-stop-button' }, "Stop")
+                                )
+                            )
+                          )
+                        ),
+                        isTimerDropdownOpen && (
+                            React.createElement('div', { className: 'timer-dropdown' },
+                                currentProjects.length > 0 ? (
+                                    currentProjects.map(p => {
+                                        const fullName = `${p.section} - ${p.subsection} - ${p.name}`;
+                                        return (
+                                            React.createElement('div', {
+                                                key: p.id,
+                                                className: 'timer-dropdown-item',
+                                                onClick: () => handleDropdownStartTimer(p.id),
+                                                title: fullName
+                                            }, fullName)
+                                        );
+                                    })
+                                ) : (
+                                    React.createElement('div', { className: 'no-projects-dropdown' }, "No 'Current' projects to start.")
+                                )
+                            )
+                        )
+                    ),
+                    React.createElement('div', { ref: projectsContainerRef, onScroll: handleScroll, className: "projects-container" },
+                        React.createElement(ProjectList, {
+                          projects: sortedAndFilteredProjects,
+                          categoryLabels: categoryLabels,
+                          expansionState: expansionState,
+                          setExpansionState: setExpansionState,
+                          onDelete: (id) => openDeleteModal(projects.find(p => p.id === id)),
+                          onEdit: openEditModal,
+                          onAddTime: openManualTimeModal,
+                          onToggleExpand: handleToggleExpand,
+                          onUpdateColor: handleUpdateColor,
+                          onDeleteLog: openDeleteLogModal,
+                          onEditLog: openEditLogModal,
+                          onMoveProject: handleMoveProject,
+                          activeTimer: activeTimer,
+                          elapsedTime: elapsedTime,
+                          onStartTimer: handleStartTimer,
+                          onStopTimer: handleStopTimer
+                        })
+                    )
+                ),
+                React.createElement('div', { className: "calendar-container" },
+                    React.createElement(Calendar, { projects: projects, onLogClick: handleLogClick, dayViewScrollTopRef: dayViewScrollTopRef })
+                )
             )
-        )
         )
       ),
 
