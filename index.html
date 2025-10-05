@@ -126,7 +126,12 @@
         flex-shrink: 0;
     }
 
-    .calendar-controls button {
+    .calendar-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .calendar-control-btn {
         background-color: transparent;
         border: 1px solid var(--border);
         color: var(--text-secondary);
@@ -136,8 +141,9 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
+        display: inline-block;
     }
-    .calendar-controls button:hover {
+    .calendar-control-btn:hover {
         border-color: var(--accent-color-light);
         color: var(--accent-color-light);
     }
@@ -579,17 +585,25 @@
         color: var(--text-primary);
         min-height: 60px; /* Reserve space at all times */
         padding: 0.75rem 1rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .global-timer-display.idle {
+        cursor: pointer;
+    }
+    
+    .global-timer-display.idle:hover {
+        border-color: var(--accent-color-light);
     }
 
     .global-timer-placeholder {
         width: 100%;
         text-align: center;
         color: var(--text-secondary);
-        cursor: pointer;
         transition: color 0.2s ease;
     }
 
-    .global-timer-placeholder:hover {
+    .global-timer-display.idle:hover .global-timer-placeholder {
         color: var(--accent-color-light);
     }
 
@@ -1049,6 +1063,10 @@
       gap: 0.5rem;
       border-radius: 4px;
       transition: background-color 0.5s ease;
+      cursor: pointer;
+    }
+    .time-log-item:hover {
+      background-color: rgba(var(--accent-color-rgb), 0.1);
     }
     .time-log-item:not(:last-child) { 
         border-bottom: 1px solid;
@@ -1124,7 +1142,7 @@
       color: var(--text-secondary);
     }
 
-    .form-input, .form-textarea {
+    .form-input, .form-textarea, .form-date-button {
       width: 100%;
       padding: 0.75rem;
       border-radius: 8px;
@@ -1136,10 +1154,15 @@
       border-color: var(--border);
       color: var(--text-primary);
     }
-    .form-input:focus, .form-textarea:focus {
+    .form-input:focus, .form-textarea:focus, .form-date-button:focus {
       outline: none;
       border-color: var(--accent-color-primary);
       box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+    }
+    
+    .form-date-button {
+        text-align: left;
+        cursor: pointer;
     }
 
     .form-textarea {
@@ -1527,6 +1550,132 @@
         transform: scale(1.1);
         border-color: var(--accent-color-light);
     }
+    
+    /* Custom Date Picker */
+    .custom-datepicker-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    }
+    .custom-datepicker-content {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+        width: 320px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .datepicker-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .datepicker-month-year {
+        font-weight: 500;
+        font-size: 1.1rem;
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+    .datepicker-month-year:hover {
+        background-color: var(--bg-primary);
+    }
+    .datepicker-select {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 1rem;
+    }
+    .datepicker-select:focus {
+        outline: none;
+        border-color: var(--accent-color-light);
+    }
+
+    .datepicker-nav-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease;
+    }
+    .datepicker-nav-button:hover {
+        background-color: var(--bg-primary);
+    }
+    .datepicker-nav-button svg {
+        width: 20px;
+        height: 20px;
+        fill: var(--text-secondary);
+    }
+    .datepicker-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .datepicker-days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+    }
+    .datepicker-day {
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    .datepicker-day:hover:not(:disabled) {
+        background-color: var(--bg-primary);
+    }
+    .datepicker-day:disabled {
+        cursor: default;
+    }
+    .datepicker-day.is-other-month {
+        color: var(--text-secondary);
+        opacity: 0.6;
+    }
+    .datepicker-day.is-today {
+        border-color: var(--accent-color-light);
+    }
+    .datepicker-day.is-selected {
+        background-color: var(--accent-color-primary);
+        color: white;
+        border-color: var(--accent-color-primary);
+    }
   </style>
 <script type="importmap">
 {
@@ -1696,6 +1845,26 @@ const formatTimeForInput = (isoString) => {
     return `${hours}:${minutes}`; // Gets HH:MM
 };
 
+const getMonthData = (year, month) => {
+    const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+    const days = [];
+    const date = new Date(year, month, 1);
+    const dayOfWeek = date.getDay();
+    const emptyDaysAtStart = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    for (let i = 0; i < emptyDaysAtStart; i++) {
+        days.push({ key: `empty-start-${i}`, isEmpty: true });
+    }
+    while (date.getMonth() === month) {
+        days.push({
+            key: date.toISOString(),
+            isEmpty: false,
+            date: new Date(date),
+        });
+        date.setDate(date.getDate() + 1);
+    }
+    return { year, month, monthName, days };
+};
+
 // --- HOOKS ---
 const useLocalStorage = (key, initialValue) => {
   const [storedValue, setStoredValue] = useState(() => {
@@ -1756,7 +1925,7 @@ const EditIcon = (props) => (
 );
 const SettingsIcon = (props) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", ...props },
-        React.createElement('path', { d: "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59-1.69.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" })
+        React.createElement('path', { d: "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12-.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" })
     )
 );
 const BackIcon = (props) => (
@@ -1784,6 +1953,16 @@ const ArrowLeftIcon = (props) => (
         React.createElement('path', { d: "M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z" })
     )
 );
+const ChevronLeftIcon = (props) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", ...props },
+        React.createElement('path', { d: "M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" })
+    )
+);
+const ChevronRightIcon = (props) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", ...props },
+        React.createElement('path', { d: "M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" })
+    )
+);
 
 // -- Generic Components --
 const Modal = ({ children }) => {
@@ -1794,6 +1973,102 @@ const Modal = ({ children }) => {
       )
     )
   );
+};
+
+const CustomDatePicker = ({ isOpen, onClose, onSelectDate, initialDate }) => {
+    const [viewDate, setViewDate] = useState(initialDate ? new Date(initialDate) : new Date());
+    const [isSelecting, setIsSelecting] = useState(false);
+    const handlePrevMonth = () => {
+        setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    };
+    const handleNextMonth = () => {
+        setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    };
+
+    const years = useMemo(() => {
+        const currentYear = new Date().getFullYear();
+        return Array.from({ length: 201 }, (_, i) => currentYear - 100 + i).reverse();
+    }, []);
+
+    const months = useMemo(() => {
+        return Array.from({ length: 12 }, (_, i) => new Date(0, i).toLocaleString('default', { month: 'long' }));
+    }, []);
+
+    const handleMonthChange = (e) => {
+        setViewDate(new Date(viewDate.getFullYear(), e.target.value, 1));
+    };
+    const handleYearChange = (e) => {
+        setViewDate(new Date(e.target.value, viewDate.getMonth(), 1));
+    };
+
+    const daysOfMonth = useMemo(() => {
+        const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+        const days = [];
+        const month = date.getMonth();
+        const year = date.getFullYear();
+        const firstDayOfWeek = date.getDay();
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+        const emptyDaysAtStart = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+        for (let i = emptyDaysAtStart; i > 0; i--) {
+            days.push({ day: daysInPrevMonth - i + 1, isOtherMonth: true, date: new Date(year, month - 1, daysInPrevMonth - i + 1) });
+        }
+        while (date.getMonth() === month) {
+            days.push({ day: date.getDate(), isOtherMonth: false, date: new Date(date) });
+            date.setDate(date.getDate() + 1);
+        }
+        const gridEndFill = 42 - days.length;
+        for (let i = 1; i <= gridEndFill; i++) {
+            days.push({ day: i, isOtherMonth: true, date: new Date(year, month + 1, i) });
+        }
+        return days;
+    }, [viewDate]);
+
+    if (!isOpen) return null;
+
+    return React.createElement('div', { className: "custom-datepicker-overlay", onClick: onClose },
+        React.createElement('div', { className: "custom-datepicker-content", onClick: e => e.stopPropagation() },
+            React.createElement('div', { className: "datepicker-header" },
+                React.createElement('button', { className: "datepicker-nav-button", onClick: handlePrevMonth, title: "Previous month" }, React.createElement(ChevronLeftIcon, null)),
+                isSelecting ? (
+                    React.createElement('div', { style: { display: 'flex', gap: '0.5rem' } },
+                        React.createElement('select', { className: 'datepicker-select', value: viewDate.getMonth(), onChange: handleMonthChange, onBlur: () => setIsSelecting(false) },
+                            months.map((m, i) => React.createElement('option', { key: m, value: i }, m))
+                        ),
+                        React.createElement('select', { className: 'datepicker-select', value: viewDate.getFullYear(), onChange: handleYearChange, onBlur: () => setIsSelecting(false) },
+                            years.map(y => React.createElement('option', { key: y, value: y }, y))
+                        )
+                    )
+                ) : (
+                    React.createElement('button', {
+                        className: "datepicker-month-year",
+                        onClick: () => setIsSelecting(true)
+                    }, viewDate.toLocaleString('default', { month: 'long', year: 'numeric' }))
+                ),
+                React.createElement('button', { className: "datepicker-nav-button", onClick: handleNextMonth, title: "Next month" }, React.createElement(ChevronRightIcon, null))
+            ),
+            React.createElement('div', { className: "datepicker-weekdays" },
+                ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(day => React.createElement('div', { key: day }, day))
+            ),
+            React.createElement('div', { className: "datepicker-days-grid" },
+                daysOfMonth.map(({ day, date, isOtherMonth }, index) => {
+                    const isToday = new Date().toDateString() === date.toDateString();
+                    const isSelected = initialDate && new Date(initialDate).toDateString() === date.toDateString();
+                    const dayClasses = [
+                        'datepicker-day',
+                        isOtherMonth ? 'is-other-month' : '',
+                        isToday ? 'is-today' : '',
+                        isSelected ? 'is-selected' : ''
+                    ].filter(Boolean).join(' ');
+
+                    return React.createElement('button', {
+                        key: `${date.toISOString()}-${index}`,
+                        className: dayClasses,
+                        onClick: () => onSelectDate(date)
+                    }, day);
+                })
+            )
+        )
+    );
 };
 
 const ConfirmDeleteModal = ({ onConfirm, onCancel, itemName, message }) => (
@@ -1925,10 +2200,10 @@ const Header = ({ websiteName, onAddProject, onSettings, onSearch, searchCriteri
     );
 };
 
-const TimeLogItem = React.memo(({ log, onDelete, onEdit }) => {
+const TimeLogItem = React.memo(({ log, onDelete, onEdit, onLogItemClick }) => {
     const { formattedDate, isWeekend } = formatLogDate(log.date);
     return (
-        React.createElement('li', { id: `log-item-${log.id}`, className: "time-log-item" },
+        React.createElement('li', { id: `log-item-${log.id}`, className: "time-log-item", onClick: () => onLogItemClick(log), title: "Click to view in calendar" },
             React.createElement('div', { className: "log-info" },
                 React.createElement('div', { className: "log-details" },
                    React.createElement('span', { className: `log-date ${isWeekend ? 'weekend-log' : ''}` }, formattedDate),
@@ -1940,10 +2215,10 @@ const TimeLogItem = React.memo(({ log, onDelete, onEdit }) => {
             ),
             React.createElement('div', { className: "log-duration" }, formatTime(log.duration)),
             React.createElement('div', { className: "log-actions" },
-                React.createElement('button', { onClick: () => onEdit(log), className: "icon-button edit-button", title: "Edit Log Entry" },
+                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onEdit(log); }, className: "icon-button edit-button", title: "Edit Log Entry" },
                     React.createElement(EditIcon, null)
                 ),
-                React.createElement('button', { onClick: () => onDelete(log.id), className: "icon-button delete-button", title: "Delete Log Entry" },
+                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onDelete(log.id); }, className: "icon-button delete-button", title: "Delete Log Entry" },
                     React.createElement(TrashIcon, null)
                 )
             )
@@ -1953,7 +2228,7 @@ const TimeLogItem = React.memo(({ log, onDelete, onEdit }) => {
 
 const ProjectItem = ({
   project, onDelete, onEdit, onAddTime, onToggleExpand, onUpdateColor, onDeleteLog,
-  onEditLog, onMoveProject, activeTimer, elapsedTime, onStartTimer, onStopTimer
+  onEditLog, onMoveProject, activeTimer, elapsedTime, onStartTimer, onStopTimer, onLogItemClick
 }) => {
   const [isNameExpanded, setIsNameExpanded] = useState(false);
   const [isNameTruncated, setIsNameTruncated] = useState(false);
@@ -2087,7 +2362,7 @@ const ProjectItem = ({
             sortedLogs.length > 0 ? (
                 React.createElement('ul', { className: "time-log-list" },
                     sortedLogs.map(log => (
-                        React.createElement(TimeLogItem, { key: log.id, log: log, onDelete: (logId) => onDeleteLog(project.id, logId), onEdit: handleEditLog })
+                        React.createElement(TimeLogItem, { key: log.id, log: log, onDelete: (logId) => onDeleteLog(project.id, logId), onEdit: handleEditLog, onLogItemClick: onLogItemClick })
                     ))
                 )
             ) : (
@@ -2185,50 +2460,222 @@ const ProjectList = (props) => {
     );
 };
 
-const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
-    const [view, setView] = useState('month');
-    const [selectedDate, setSelectedDate] = useState(null);
+const Calendar = ({ projects, onLogClick, dayViewScrollTopRef, view, setView, selectedDate, setSelectedDate, scrollToTime, setScrollToTime }) => {
+    const [months, setMonths] = useState([]);
+    const scrollContainerRef = useRef(null);
+    const topSentinelRef = useRef(null);
+    const bottomSentinelRef = useRef(null);
     const todayRef = useRef(null);
     const dayViewScrollRef = useRef(null);
-    const toLocalDateKey = (date) => {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-    const getMonthData = (year, month) => {
-        const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
-        const days = [];
-        const date = new Date(year, month, 1);
-        const dayOfWeek = date.getDay();
-        const emptyDaysAtStart = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        for (let i = 0; i < emptyDaysAtStart; i++) {
-            days.push({ key: `empty-start-${i}`, isEmpty: true });
+    const isInitialLoad = useRef(true);
+    const scrollStateBeforeUpdate = useRef({ top: 0, height: 0, direction: null });
+    const isInfiniteScrolling = useRef(false);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+    const today = useMemo(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }, []);
+    
+    const loadMonths = useCallback((direction, count = 6) => {
+        if (direction === 'past' && scrollContainerRef.current) {
+            isInfiniteScrolling.current = true;
+            scrollStateBeforeUpdate.current = {
+                top: scrollContainerRef.current.scrollTop,
+                height: scrollContainerRef.current.scrollHeight,
+                direction: 'past',
+            };
+        } else if (direction === 'future') {
+            isInfiniteScrolling.current = true;
         }
-        while (date.getMonth() === month) {
-            days.push({
-                key: date.toISOString(),
-                isEmpty: false,
-                date: new Date(date),
-            });
-            date.setDate(date.getDate() + 1);
-        }
-        return { year, month, monthName, days };
-    }
-    const DayView = ({ selectedDate, logs, onLogClick, scrollRef, dayViewScrollTopRef }) => {
-        const hours = Array.from({ length: 24 }, (_, i) => i);
-        
-        React.useLayoutEffect(() => {
-            if (scrollRef.current && dayViewScrollTopRef) {
-                scrollRef.current.scrollTop = dayViewScrollTopRef.current;
+
+        setMonths(prevMonths => {
+            if (prevMonths.length === 0) return [];
+
+            if (direction === 'past') {
+                const firstMonth = prevMonths[0];
+                const startDate = new Date(firstMonth.year, firstMonth.month);
+                const newMonths = [];
+                for (let i = 0; i < count; i++) {
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    newMonths.unshift(getMonthData(startDate.getFullYear(), startDate.getMonth()));
+                }
+                return [...newMonths, ...prevMonths];
+            } else { // future
+                const lastMonth = prevMonths[prevMonths.length - 1];
+                const startDate = new Date(lastMonth.year, lastMonth.month);
+                const newMonths = [];
+                for (let i = 0; i < count; i++) {
+                    startDate.setMonth(startDate.getMonth() + 1);
+                    newMonths.push(getMonthData(startDate.getFullYear(), startDate.getMonth()));
+                }
+                return [...prevMonths, ...newMonths];
             }
         });
+    }, []);
+
+    // Initial load effect
+    useEffect(() => {
+        const initialMonths = [];
+        const startDate = new Date(today.getFullYear() - 1, today.getMonth());
+        const endDate = new Date(today.getFullYear() + 1, today.getMonth());
+        let currentDate = new Date(startDate);
+        while(currentDate <= endDate) {
+            initialMonths.push(getMonthData(currentDate.getFullYear(), currentDate.getMonth()));
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+        setMonths(initialMonths);
+    }, [today]);
+
+    // Scroll correction effect for prepending months
+    useLayoutEffect(() => {
+        if (scrollContainerRef.current && scrollStateBeforeUpdate.current.direction === 'past') {
+            const newHeight = scrollContainerRef.current.scrollHeight;
+            const oldHeight = scrollStateBeforeUpdate.current.height;
+            const oldTop = scrollStateBeforeUpdate.current.top;
+            if (newHeight > oldHeight) { // Check if content was actually added
+                scrollContainerRef.current.scrollTop = oldTop + (newHeight - oldHeight);
+            }
+            scrollStateBeforeUpdate.current = { top: 0, height: 0, direction: null };
+        }
+        isInfiniteScrolling.current = false;
+    }, [months]);
+
+    // Intersection Observer effect for infinite scroll
+    useEffect(() => {
+        const scrollEl = scrollContainerRef.current;
+        if (!scrollEl) return;
+        
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isInfiniteScrolling.current) {
+                        if (entry.target === topSentinelRef.current) {
+                            loadMonths('past');
+                        } else if (entry.target === bottomSentinelRef.current) {
+                            loadMonths('future');
+                        }
+                    }
+                });
+            },
+            { root: scrollEl, threshold: 0.1 }
+        );
+
+        const topEl = topSentinelRef.current;
+        const bottomEl = bottomSentinelRef.current;
+
+        if (topEl) observer.observe(topEl);
+        if (bottomEl) observer.observe(bottomEl);
+
+        return () => {
+            if (topEl) observer.unobserve(topEl);
+            if (bottomEl) observer.unobserve(bottomEl);
+        };
+    }, [loadMonths]);
+
+    // Effect to scroll to the correct position
+    useEffect(() => {
+        if (isInfiniteScrolling.current) return;
+        
+        if (view === 'month') {
+            let targetElement = null;
+            if (isInitialLoad.current && months.length > 0 && todayRef.current) {
+                targetElement = todayRef.current;
+                isInitialLoad.current = false;
+            } else if (!isInitialLoad.current && selectedDate) {
+                targetElement = document.querySelector(`[data-month-id="${selectedDate.getFullYear()}-${selectedDate.getMonth() + 1}"]`);
+            }
+            
+            if (targetElement) {
+                setTimeout(() => {
+                    targetElement.scrollIntoView({
+                        behavior: 'auto',
+                        block: 'center',
+                    });
+                }, 100);
+            }
+        }
+    }, [view, selectedDate, months]);
+
+    const handleGoToDateClick = () => {
+        setIsDatePickerOpen(true);
+    };
+
+    const handleDateSelected = (date) => {
+        setIsDatePickerOpen(false);
+        if (!date) return;
+
+        setView('month');
+        setSelectedDate(date);
+
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const monthId = `${year}-${month + 1}`;
+        const monthHeader = document.querySelector(`[data-month-id="${monthId}"]`);
+        
+        if (monthHeader) {
+            setTimeout(() => {
+                monthHeader.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
+        } else {
+            // If month is not yet rendered, regenerate the month list around the selected date.
+            isInitialLoad.current = false; // We are no longer on the initial load
+            const newInitialMonths = [];
+            const startDate = new Date(date.getFullYear() - 1, date.getMonth());
+            const endDate = new Date(date.getFullYear() + 1, date.getMonth());
+            let currentDate = new Date(startDate);
+            while(currentDate <= endDate) {
+                newInitialMonths.push(getMonthData(currentDate.getFullYear(), currentDate.getMonth()));
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            }
+            setMonths(newInitialMonths);
+        }
+    };
+    
+    const DayView = ({ selectedDate, logs, onLogClick, scrollRef, dayViewScrollTopRef, scrollToTime, setScrollToTime }) => {
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+        
+        React.useEffect(() => {
+            if (scrollRef.current && dayViewScrollTopRef && !scrollToTime) {
+                scrollRef.current.scrollTop = dayViewScrollTopRef.current;
+            }
+        }, []);
 
         const handleScroll = (e) => {
-            if (dayViewScrollTopRef) {
+            if (dayViewScrollTopRef && !scrollToTime) {
                 dayViewScrollTopRef.current = e.target.scrollTop;
             }
         };
+
+        React.useEffect(() => {
+            if (scrollRef.current) {
+                let scrollToPosition = 480; // Default to 8am
+                const containerHeight = scrollRef.current.clientHeight;
+
+                if (scrollToTime) {
+                    const startTime = new Date(scrollToTime);
+                    const minutesFromMidnight = startTime.getHours() * 60 + startTime.getMinutes();
+                    scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 4));
+                    setScrollToTime(null);
+                } else {
+                    const todayDate = new Date();
+                    const selectedDateCopy = new Date(selectedDate);
+                    todayDate.setHours(0, 0, 0, 0);
+                    selectedDateCopy.setHours(0, 0, 0, 0);
+                    if (selectedDateCopy.getTime() === todayDate.getTime()) {
+                        const now = new Date();
+                        const minutesFromMidnight = now.getHours() * 60 + now.getMinutes();
+                        scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 3));
+                    }
+                }
+                 setTimeout(() => scrollRef.current.scrollTo({
+                    top: scrollToPosition,
+                    behavior: 'smooth'
+                }), 100);
+            }
+        }, [selectedDate, scrollToTime, scrollRef, setScrollToTime]);
+
 
         return (
             React.createElement('div', { className: "calendar-day-view" },
@@ -2272,11 +2719,14 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
             )
         );
     };
-    const today = useMemo(() => {
-        const d = new Date();
-        d.setHours(0, 0, 0, 0);
-        return d;
-    }, []);
+
+    const toLocalDateKey = (date) => {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
     const logsByDate = useMemo(() => {
         const map = new Map();
         projects.forEach(project => {
@@ -2291,6 +2741,7 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
         });
         return map;
     }, [projects]);
+
     const logsForSelectedDate = useMemo(() => {
         if (!selectedDate) return [];
         const selectedDateKey = toLocalDateKey(selectedDate);
@@ -2310,30 +2761,7 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
         });
         return dailyLogs.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     }, [selectedDate, projects]);
-    const months = useMemo(() => {
-        const earliestProjectDate = projects.length > 0
-            ? projects.reduce((earliest, p) => {
-                const pDate = new Date(p.createdAt);
-                return pDate < earliest ? pDate : earliest;
-            }, new Date(projects[0].createdAt))
-            : null;
-        const calendarStartDate = new Date(today);
-        calendarStartDate.setDate(1);
-        if (earliestProjectDate && earliestProjectDate < calendarStartDate) {
-            calendarStartDate.setFullYear(earliestProjectDate.getFullYear(), earliestProjectDate.getMonth());
-        } else {
-            calendarStartDate.setFullYear(today.getFullYear() - 1);
-        }
-        const calendarEndDate = new Date(today);
-        calendarEndDate.setFullYear(today.getFullYear() + 2);
-        const monthData = [];
-        const currentDate = new Date(calendarStartDate);
-        while (currentDate <= calendarEndDate) {
-            monthData.push(getMonthData(currentDate.getFullYear(), currentDate.getMonth()));
-            currentDate.setMonth(currentDate.getMonth() + 1);
-        }
-        return monthData;
-    }, [projects, today]);
+    
     const handleDayClick = (date) => {
         setSelectedDate(date);
         setView('day');
@@ -2344,50 +2772,25 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
             block: 'center',
         });
     };
-    useEffect(() => {
-        if (view === 'month') {
-            setTimeout(() => {
-                 todayRef.current?.scrollIntoView({
-                    behavior: 'auto',
-                    block: 'center',
-                });
-            }, 100);
-        }
-    }, [view]);
-
-    useEffect(() => {
-        if (view === 'day' && selectedDate && dayViewScrollRef.current) {
-            const todayDate = new Date();
-            const selectedDateCopy = new Date(selectedDate);
-            todayDate.setHours(0, 0, 0, 0);
-            selectedDateCopy.setHours(0, 0, 0, 0);
-            if (selectedDateCopy.getTime() === todayDate.getTime()) {
-                const now = new Date();
-                const minutesFromMidnight = now.getHours() * 60 + now.getMinutes();
-                const containerHeight = dayViewScrollRef.current.clientHeight;
-                const scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 3));
-                setTimeout(() => dayViewScrollRef.current.scrollTo({
-                    top: scrollToPosition,
-                    behavior: 'smooth'
-                }), 100);
-            } else {
-                setTimeout(() => dayViewScrollRef.current.scrollTo({
-                    top: 8 * 60,
-                    behavior: 'auto'
-                }), 100);
-            }
-        }
-    }, [view, selectedDate]);
-
+    
     return (
         React.createElement('div', { className: "calendar-wrapper" },
+            React.createElement(CustomDatePicker, { 
+                isOpen: isDatePickerOpen, 
+                onClose: () => setIsDatePickerOpen(false), 
+                onSelectDate: handleDateSelected,
+                initialDate: selectedDate || new Date()
+            }),
             React.createElement('div', { className: "calendar-header" },
                 React.createElement('span', null, view === 'month' ? 'Activity Calendar' : 'Daily Schedule'),
                 React.createElement('div', { className: "calendar-controls" },
+                    view === 'month' && (
+                        React.createElement('button', { onClick: handleGoToDateClick, className: "calendar-control-btn" }, "Go to Date")
+                    ),
                     view === 'month' ? (
-                        React.createElement('button', { onClick: handleGoToToday }, "Today")
+                        React.createElement('button', { onClick: handleGoToToday, className: "calendar-control-btn" }, "Today")
                     ) : (
-                        React.createElement('button', { onClick: () => setView('month') }, "Back to Month View")
+                        React.createElement('button', { onClick: () => setView('month'), className: "calendar-control-btn" }, "Back to Month View")
                     )
                 )
             ),
@@ -2396,10 +2799,11 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
                     React.createElement('div', { className: "calendar-weekdays" },
                         ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => React.createElement('div', { key: i }, day))
                     ),
-                    React.createElement('div', { className: "calendar-grid-scroll-area" },
-                        months.map(({ year, monthName, days }) => (
+                    React.createElement('div', { className: "calendar-grid-scroll-area", ref: scrollContainerRef },
+                        React.createElement('div', { ref: topSentinelRef, style: { height: "1px" } }),
+                        months.map(({ year, month, monthName, days }) => (
                             React.createElement('div', { key: `${year}-${monthName}` },
-                                React.createElement('h3', { className: "calendar-month-header" }, `${monthName} ${year}`),
+                                React.createElement('h3', { className: "calendar-month-header", 'data-month-id': `${year}-${month + 1}` }, `${monthName} ${year}`),
                                 React.createElement('div', { className: "calendar-month-grid" },
                                     days.map((day) => {
                                         if (day.isEmpty) {
@@ -2435,11 +2839,20 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef }) => {
                                     })
                                 )
                             )
-                        ))
+                        )),
+                        React.createElement('div', { ref: bottomSentinelRef, style: { height: "1px" } })
                     )
                 )
             ) : selectedDate && (
-                React.createElement(DayView, { selectedDate: selectedDate, logs: logsForSelectedDate, onLogClick: onLogClick, scrollRef: dayViewScrollRef, dayViewScrollTopRef: dayViewScrollTopRef })
+                React.createElement(DayView, { 
+                    selectedDate: selectedDate, 
+                    logs: logsForSelectedDate, 
+                    onLogClick: onLogClick, 
+                    scrollRef: dayViewScrollRef, 
+                    dayViewScrollTopRef: dayViewScrollTopRef,
+                    scrollToTime: scrollToTime,
+                    setScrollToTime: setScrollToTime
+                })
             )
         )
     );
@@ -2529,6 +2942,13 @@ const ManualTimeEntryModal = ({ project, logToEdit, onSave, onClose }) => {
     const [startTime, setStartTime] = useState(formatTimeForInput(logToEdit?.startTime || new Date(Date.now() - 30 * 60000).toISOString()));
     const [endTime, setEndTime] = useState(formatTimeForInput(logToEdit?.endTime || new Date().toISOString()));
     const [durationStartTime, setDurationStartTime] = useState(formatTimeForInput(logToEdit?.startTime || new Date().toISOString()));
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+    
+    const handleDateSelect = (selectedDate) => {
+        setDate(formatDateForInput(selectedDate.toISOString()));
+        setDatePickerVisible(false);
+    };
+
     const handleSave = () => {
         let logEntry;
         const logId = logToEdit?.id || Date.now();
@@ -2577,6 +2997,12 @@ const ManualTimeEntryModal = ({ project, logToEdit, onSave, onClose }) => {
         : !date || !startTime || !endTime || new Date(`${date}T${startTime}`) >= new Date(`${date}T${endTime}`);
     return (
         React.createElement(Modal, null,
+            React.createElement(CustomDatePicker, {
+                isOpen: isDatePickerVisible,
+                onClose: () => setDatePickerVisible(false),
+                onSelectDate: handleDateSelect,
+                initialDate: date
+            }),
             React.createElement('h2', null, (logToEdit ? 'Edit Manual Entry' : 'Add Manual Time Entry') + ' for ' + project.name),
              React.createElement('div', { className: "form-group" },
                 React.createElement('label', null, "Entry Type"),
@@ -2596,7 +3022,7 @@ const ManualTimeEntryModal = ({ project, logToEdit, onSave, onClose }) => {
                     React.createElement('div', { className: "time-range-inputs" },
                         React.createElement('div', { className: "form-group" },
                             React.createElement('label', { htmlFor: "durationDate" }, "Start Date"),
-                            React.createElement('input', { id: "durationDate", type: "date", value: date, onChange: e => setDate(e.target.value), className: "form-input" })
+                            React.createElement('button', { id: "durationDate", onClick: () => setDatePickerVisible(true), className: "form-date-button" }, new Date(date + "T12:00:00").toLocaleDateString())
                         ),
                         React.createElement('div', { className: "form-group" },
                             React.createElement('label', { htmlFor: "durationStartTime" }, "Start Time"),
@@ -2618,7 +3044,7 @@ const ManualTimeEntryModal = ({ project, logToEdit, onSave, onClose }) => {
                 React.createElement(React.Fragment, null,
                     React.createElement('div', { className: "form-group" },
                         React.createElement('label', { htmlFor: "date" }, "Date"),
-                        React.createElement('input', { id: "date", type: "date", value: date, onChange: e => setDate(e.target.value), className: "form-input" })
+                        React.createElement('button', { id: "date", onClick: () => setDatePickerVisible(true), className: "form-date-button" }, new Date(date + "T12:00:00").toLocaleDateString())
                     ),
                     React.createElement('div', { className: "time-range-inputs" },
                         React.createElement('div', { className: "form-group" },
@@ -2648,6 +3074,13 @@ const SearchModal = ({ onSearch, onClose, currentCriteria }) => {
     const [searchType, setSearchType] = useState(currentCriteria?.type || 'name');
     const [query, setQuery] = useState(currentCriteria?.query || '');
     const [date, setDate] = useState(currentCriteria?.date || formatDateForInput(new Date().toISOString()));
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+    
+    const handleDateSelect = (selectedDate) => {
+        setDate(formatDateForInput(selectedDate.toISOString()));
+        setDatePickerVisible(false);
+    };
+
     const handleSearch = () => {
         onSearch({ type: searchType, query: query.trim(), date });
         onClose();
@@ -2655,6 +3088,12 @@ const SearchModal = ({ onSearch, onClose, currentCriteria }) => {
     const isSearchDisabled = searchType !== 'date' && query.trim() === '';
     return (
         React.createElement(Modal, null,
+             React.createElement(CustomDatePicker, {
+                isOpen: isDatePickerVisible,
+                onClose: () => setDatePickerVisible(false),
+                onSelectDate: handleDateSelect,
+                initialDate: date
+            }),
             React.createElement('h2', null, "Search Projects / Logs"),
             React.createElement('div', { className: "search-type-selector" },
                 React.createElement('button', { className: `search-type-button ${searchType === 'name' ? 'active' : ''}`, onClick: () => setSearchType('name') }, "By Name"),
@@ -2676,7 +3115,7 @@ const SearchModal = ({ onSearch, onClose, currentCriteria }) => {
             searchType === 'date' && (
                 React.createElement('div', { className: "form-group" },
                     React.createElement('label', { htmlFor: "search-date" }, "Logs on Date"),
-                    React.createElement('input', { id: "search-date", type: "date", value: date, onChange: (e) => setDate(e.target.value), className: "form-input" })
+                    React.createElement('button', { id: "search-date", onClick: () => setDatePickerVisible(true), className: "form-date-button" }, new Date(date + "T12:00:00").toLocaleDateString())
                 )
             ),
             React.createElement('div', { className: "modal-actions" },
@@ -3014,6 +3453,11 @@ const App = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isTimerDropdownOpen, setIsTimerDropdownOpen] = useState(false);
   const [isConfirmingSave, setIsConfirmingSave] = useState(false);
+
+  // Calendar State
+  const [calendarView, setCalendarView] = useState('month');
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(null);
+  const [scrollToTime, setScrollToTime] = useState(null); // To trigger scroll in DayView
   
   const dayViewScrollTopRef = useRef(0);
   const projectsContainerRef = useRef(null);
@@ -3248,7 +3692,7 @@ const App = () => {
   }, [focusedProject, focusOnItem]);
 
 
-  const handleLogClick = (projectId, logId) => {
+  const handleCalendarLogClick = (projectId, logId) => {
       const project = projects.find(p => p.id === projectId);
       if (project) {
           if (project.status !== activeWorkArea) {
@@ -3257,6 +3701,12 @@ const App = () => {
           setFocusedLog({ projectId, logId });
       }
   };
+
+    const handleProjectLogClick = (log) => {
+        setCalendarView('day');
+        setSelectedCalendarDate(new Date(log.date));
+        setScrollToTime(log.startTime);
+    };
 
   const handleAddOrUpdateProject = (projectData) => {
     setProjects(prevProjects => {
@@ -3618,9 +4068,12 @@ const App = () => {
             React.createElement('main', { className: "main-view-container" },
                 React.createElement('div', { className: "projects-column" },
                     React.createElement('div', { ref: timerWrapperRef, className: "global-timer-wrapper" },
-                        React.createElement('div', { className: `global-timer-display ${activeTimer ? 'visible' : ''}` },
+                        React.createElement('div', { 
+                           className: `global-timer-display ${activeTimer ? 'visible' : 'idle'}`,
+                           onClick: !activeTimer ? () => setIsTimerDropdownOpen(prev => !prev) : undefined
+                         },
                           !activeTimer ? (
-                            React.createElement('div', { className: 'global-timer-placeholder', onClick: () => setIsTimerDropdownOpen(prev => !prev) }, "Click to start a timer")
+                            React.createElement('div', { className: 'global-timer-placeholder' }, "Click to start a timer")
                           ) : (
                             React.createElement('div', { className: 'global-timer-active-content' },
                                 React.createElement('span', { className: 'global-timer-info' },
@@ -3671,12 +4124,23 @@ const App = () => {
                           activeTimer: activeTimer,
                           elapsedTime: elapsedTime,
                           onStartTimer: handleStartTimer,
-                          onStopTimer: handleStopTimer
+                          onStopTimer: handleStopTimer,
+                          onLogItemClick: handleProjectLogClick
                         })
                     )
                 ),
                 React.createElement('div', { className: "calendar-container" },
-                    React.createElement(Calendar, { projects: projects, onLogClick: handleLogClick, dayViewScrollTopRef: dayViewScrollTopRef })
+                    React.createElement(Calendar, { 
+                        projects: projects, 
+                        onLogClick: handleCalendarLogClick, 
+                        dayViewScrollTopRef: dayViewScrollTopRef,
+                        view: calendarView,
+                        setView: setCalendarView,
+                        selectedDate: selectedCalendarDate,
+                        setSelectedDate: setSelectedCalendarDate,
+                        scrollToTime: scrollToTime,
+                        setScrollToTime: setScrollToTime
+                    })
                 )
             )
         )
