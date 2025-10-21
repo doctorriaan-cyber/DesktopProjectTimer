@@ -44,9 +44,8 @@
     }
 
     #root {
-      max-width: 1280px; /* Wider for new layout */
       margin: 0 auto;
-      padding: 1rem;
+      padding: 1rem 2rem;
       display: flex;
       flex-direction: column;
       height: 100vh; /* Changed from min-height to create a fixed viewport */
@@ -67,7 +66,7 @@
     .projects-column {
       display: flex;
       flex-direction: column;
-      flex: 2;
+      flex: 1;
       min-width: 0;
     }
 
@@ -96,7 +95,8 @@
     }
 
     .calendar-container {
-        flex: 1;
+        flex-shrink: 0;
+        width: 480px;
         min-width: 0;
         /* Sticky positioning and fixed heights are no longer needed.
            The height is now controlled by the parent flex container. */
@@ -974,6 +974,31 @@
         width: 16px;
         height: 16px;
         fill: currentColor;
+    }
+    .project-action-button.icon-only {
+        padding: 0.4rem 0.8rem;
+        font-size: 1.2rem;
+        line-height: 1;
+        font-weight: 700;
+    }
+    
+    .project-item-right-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        margin-left: auto;
+    }
+    .project-item-right-controls .project-color-picker {
+        width: 20px;
+        height: 20px;
+    }
+    .project-item-right-controls .icon-button {
+        padding: 0.2rem;
+    }
+    .project-item-right-controls .icon-button svg {
+        width: 18px;
+        height: 18px;
     }
 
 
@@ -2264,25 +2289,25 @@ const ProjectItem = ({
     switch (project.status) {
         case 'current':
             return (
-                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'ready'); }, className: "project-action-button", title: "Move to Ready for Invoicing" },
-                    "Ready for Invoicing ", React.createElement(ArrowRightIcon, null)
+                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'ready'); }, className: "project-action-button icon-only", title: "Move to Ready for Invoicing" },
+                    '>'
                 )
             );
         case 'ready':
             return (
                 React.createElement(React.Fragment, null,
-                    React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'current'); }, className: "project-action-button", title: "Move back to Current" },
-                        React.createElement(ArrowLeftIcon, null), " Current"
+                    React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'current'); }, className: "project-action-button icon-only", title: "Move back to Current" },
+                        '<'
                     ),
-                    React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'invoiced'); }, className: "project-action-button", title: "Move to Invoiced" },
-                        "Invoiced ", React.createElement(ArrowRightIcon, null)
+                    React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'invoiced'); }, className: "project-action-button icon-only", title: "Move to Invoiced" },
+                        '>'
                     )
                 )
             );
         case 'invoiced':
             return (
-                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'ready'); }, className: "project-action-button", title: "Move back to Ready for Invoicing" },
-                    React.createElement(ArrowLeftIcon, null), " Ready for Invoicing"
+                React.createElement('button', { onClick: (e) => { e.stopPropagation(); onMoveProject(project.id, 'ready'); }, className: "project-action-button icon-only", title: "Move back to Ready for Invoicing" },
+                    '<'
                 )
             );
         default:
@@ -2330,18 +2355,20 @@ const ProjectItem = ({
         React.createElement('div', { className: "project-actions" },
             renderActionButtons()
         ),
-        React.createElement('div', { className: "project-color-picker", title: "Change Project Color" },
-            React.createElement('div', { className: "color-picker-display", style: { backgroundColor: project.color } }),
-            React.createElement('input', {
-                type: "color",
-                className: "color-picker-input",
-                value: project.color,
-                onChange: (e) => onUpdateColor(project.id, e.target.value),
-                onClick: (e) => e.stopPropagation()
-            })
-        ),
-        React.createElement('button', { onClick: (e) => { e.stopPropagation(); onEdit(project); }, className: "icon-button edit-button", title: "Edit Project" }, React.createElement(EditIcon, null)),
-        React.createElement('button', { onClick: (e) => { e.stopPropagation(); onDelete(project.id); }, className: "icon-button delete-button", title: "Delete Project" }, React.createElement(TrashIcon, null))
+        React.createElement('div', { className: "project-item-right-controls" },
+            React.createElement('div', { className: "project-color-picker", title: "Change Project Color" },
+                React.createElement('div', { className: "color-picker-display", style: { backgroundColor: project.color } }),
+                React.createElement('input', {
+                    type: "color",
+                    className: "color-picker-input",
+                    value: project.color,
+                    onChange: (e) => onUpdateColor(project.id, e.target.value),
+                    onClick: (e) => e.stopPropagation()
+                })
+            ),
+            React.createElement('button', { onClick: (e) => { e.stopPropagation(); onEdit(project); }, className: "icon-button edit-button", title: "Edit Project" }, React.createElement(EditIcon, null)),
+            React.createElement('button', { onClick: (e) => { e.stopPropagation(); onDelete(project.id); }, className: "icon-button delete-button", title: "Delete Project" }, React.createElement(TrashIcon, null))
+        )
       ),
       React.createElement('div', { className: "project-item-details" },
         project.notes && (
