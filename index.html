@@ -1950,7 +1950,7 @@ const EditIcon = (props) => (
 );
 const SettingsIcon = (props) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", ...props },
-        React.createElement('path', { d: "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12-.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" })
+        React.createElement('path', { d: "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.5.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12-.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.5-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" })
     )
 );
 const BackIcon = (props) => (
@@ -2487,6 +2487,93 @@ const ProjectList = (props) => {
     );
 };
 
+const DayView = ({ selectedDate, logs, onLogClick, scrollRef, dayViewScrollTopRef, scrollToTime, setScrollToTime }) => {
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+    
+    React.useEffect(() => {
+        if (scrollRef.current && dayViewScrollTopRef && !scrollToTime) {
+            scrollRef.current.scrollTop = dayViewScrollTopRef.current;
+        }
+    }, []);
+
+    const handleScroll = (e) => {
+        if (dayViewScrollTopRef && !scrollToTime) {
+            dayViewScrollTopRef.current = e.target.scrollTop;
+        }
+    };
+
+    React.useEffect(() => {
+        if (scrollRef.current) {
+            let scrollToPosition = 480; // Default to 8am
+            const containerHeight = scrollRef.current.clientHeight;
+
+            if (scrollToTime) {
+                const startTime = new Date(scrollToTime);
+                const minutesFromMidnight = startTime.getHours() * 60 + startTime.getMinutes();
+                scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 4));
+                setScrollToTime(null);
+            } else {
+                const todayDate = new Date();
+                const selectedDateCopy = new Date(selectedDate);
+                todayDate.setHours(0, 0, 0, 0);
+                selectedDateCopy.setHours(0, 0, 0, 0);
+                if (selectedDateCopy.getTime() === todayDate.getTime()) {
+                    const now = new Date();
+                    const minutesFromMidnight = now.getHours() * 60 + now.getMinutes();
+                    scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 3));
+                }
+            }
+             setTimeout(() => scrollRef.current.scrollTo({
+                top: scrollToPosition,
+                behavior: 'smooth'
+            }), 100);
+        }
+    }, [selectedDate, scrollToTime, scrollRef, setScrollToTime]);
+
+
+    return (
+        React.createElement('div', { className: "calendar-day-view" },
+            React.createElement('div', { className: "day-view-header" },
+                selectedDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            ),
+            React.createElement('div', { ref: scrollRef, className: "day-view-scroll-area", onScroll: handleScroll },
+                React.createElement('div', { className: "day-view-timeline" },
+                    hours.map(hour => (
+                        React.createElement('div', { key: hour, className: "hour-block" },
+                            React.createElement('div', { className: "hour-label" },
+                                new Date(0, 0, 0, hour).toLocaleTimeString([], { hour: 'numeric', hour12: true })
+                            )
+                        )
+                    )),
+                    logs.map(log => {
+                        const start = new Date(log.startTime);
+                        const minutesFromMidnight = start.getHours() * 60 + start.getMinutes();
+                        const durationInMinutes = Math.max(1, log.duration / 60);
+                        return (
+                            React.createElement('div', {
+                                key: log.id,
+                                className: "log-block",
+                                style: {
+                                    top: `${minutesFromMidnight}px`,
+                                    height: `${durationInMinutes}px`,
+                                    backgroundColor: log.color,
+                                },
+                                title: `${log.projectName}\n${formatLogTime(log.startTime)} - ${formatLogTime(log.endTime)}`,
+                                onClick: () => {
+                                    onLogClick(log.projectId, log.id);
+                                }
+                            },
+                                React.createElement('div', { className: "log-block-text" }, log.projectName),
+                                React.createElement('div', { className: "log-block-time" }, formatTime(log.duration))
+                            )
+                        );
+                    })
+                )
+            )
+        )
+    );
+};
+
 const Calendar = ({ projects, onLogClick, dayViewScrollTopRef, view, setView, selectedDate, setSelectedDate, scrollToTime, setScrollToTime }) => {
     const [months, setMonths] = useState([]);
     const scrollContainerRef = useRef(null);
@@ -2660,93 +2747,6 @@ const Calendar = ({ projects, onLogClick, dayViewScrollTopRef, view, setView, se
         }
     };
     
-    const DayView = ({ selectedDate, logs, onLogClick, scrollRef, dayViewScrollTopRef, scrollToTime, setScrollToTime }) => {
-        const hours = Array.from({ length: 24 }, (_, i) => i);
-        
-        React.useEffect(() => {
-            if (scrollRef.current && dayViewScrollTopRef && !scrollToTime) {
-                scrollRef.current.scrollTop = dayViewScrollTopRef.current;
-            }
-        }, []);
-
-        const handleScroll = (e) => {
-            if (dayViewScrollTopRef && !scrollToTime) {
-                dayViewScrollTopRef.current = e.target.scrollTop;
-            }
-        };
-
-        React.useEffect(() => {
-            if (scrollRef.current) {
-                let scrollToPosition = 480; // Default to 8am
-                const containerHeight = scrollRef.current.clientHeight;
-
-                if (scrollToTime) {
-                    const startTime = new Date(scrollToTime);
-                    const minutesFromMidnight = startTime.getHours() * 60 + startTime.getMinutes();
-                    scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 4));
-                    setScrollToTime(null);
-                } else {
-                    const todayDate = new Date();
-                    const selectedDateCopy = new Date(selectedDate);
-                    todayDate.setHours(0, 0, 0, 0);
-                    selectedDateCopy.setHours(0, 0, 0, 0);
-                    if (selectedDateCopy.getTime() === todayDate.getTime()) {
-                        const now = new Date();
-                        const minutesFromMidnight = now.getHours() * 60 + now.getMinutes();
-                        scrollToPosition = Math.max(0, minutesFromMidnight - (containerHeight / 3));
-                    }
-                }
-                 setTimeout(() => scrollRef.current.scrollTo({
-                    top: scrollToPosition,
-                    behavior: 'smooth'
-                }), 100);
-            }
-        }, [selectedDate, scrollToTime, scrollRef, setScrollToTime]);
-
-
-        return (
-            React.createElement('div', { className: "calendar-day-view" },
-                React.createElement('div', { className: "day-view-header" },
-                    selectedDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-                ),
-                React.createElement('div', { ref: scrollRef, className: "day-view-scroll-area", onScroll: handleScroll },
-                    React.createElement('div', { className: "day-view-timeline" },
-                        hours.map(hour => (
-                            React.createElement('div', { key: hour, className: "hour-block" },
-                                React.createElement('div', { className: "hour-label" },
-                                    new Date(0, 0, 0, hour).toLocaleTimeString([], { hour: 'numeric', hour12: true })
-                                )
-                            )
-                        )),
-                        logs.map(log => {
-                            const start = new Date(log.startTime);
-                            const minutesFromMidnight = start.getHours() * 60 + start.getMinutes();
-                            const durationInMinutes = Math.max(1, log.duration / 60);
-                            return (
-                                React.createElement('div', {
-                                    key: log.id,
-                                    className: "log-block",
-                                    style: {
-                                        top: `${minutesFromMidnight}px`,
-                                        height: `${durationInMinutes}px`,
-                                        backgroundColor: log.color,
-                                    },
-                                    title: `${log.projectName}\n${formatLogTime(log.startTime)} - ${formatLogTime(log.endTime)}`,
-                                    onClick: () => {
-                                        onLogClick(log.projectId, log.id);
-                                    }
-                                },
-                                    React.createElement('div', { className: "log-block-text" }, log.projectName),
-                                    React.createElement('div', { className: "log-block-time" }, formatTime(log.duration))
-                                )
-                            );
-                        })
-                    )
-                )
-            )
-        );
-    };
-
     const toLocalDateKey = (date) => {
         const year = date.getFullYear();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
