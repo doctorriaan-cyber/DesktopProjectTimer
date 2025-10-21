@@ -860,18 +860,24 @@
     }
 
     .project-name {
-      font-weight: 500;
-      font-size: 1.2rem;
-      text-align: left;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+        font-weight: 500;
+        font-size: 1.2rem;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-height: 1.3;
+        max-height: calc(1.2rem * 1.3 * 2);
     }
     
     .project-name.expanded {
         white-space: normal;
         overflow: visible;
-        text-overflow: clip; /* or 'initial' */
+        text-overflow: clip;
+        -webkit-line-clamp: unset;
+        max-height: none;
     }
     
     .more-less-button {
@@ -2256,26 +2262,32 @@ const ProjectItem = ({
   onEditLog, onMoveProject, activeTimer, elapsedTime, onStartTimer, onStopTimer, onLogItemClick
 }) => {
   const [isNameExpanded, setIsNameExpanded] = useState(false);
-  const [isNameTruncated, setIsNameTruncated] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
   const nameRef = useRef(null);
   const isTimerRunning = activeTimer?.projectId === project.id;
 
   useLayoutEffect(() => {
     const checkOverflow = () => {
         if (nameRef.current) {
-            const hasOverflow = nameRef.current.scrollWidth > nameRef.current.clientWidth;
-            if (isNameTruncated !== hasOverflow) {
-                setIsNameTruncated(hasOverflow);
+            // For multi-line text, we check if the scroll height is greater than the visible height.
+            // This works reliably with -webkit-line-clamp.
+            const hasOverflow = nameRef.current.scrollHeight > nameRef.current.clientHeight;
+            // Only update state if it has changed to prevent re-render loops
+            if (isOverflowing !== hasOverflow) {
+                setIsOverflowing(hasOverflow);
             }
         }
     };
+    // A small timeout allows the DOM to update before we measure it.
     const timeoutId = setTimeout(checkOverflow, 50);
     window.addEventListener('resize', checkOverflow);
     return () => {
         clearTimeout(timeoutId);
         window.removeEventListener('resize', checkOverflow);
     };
-  }, [project.name, isNameTruncated]);
+  }, [project.name, isNameExpanded, isOverflowing]);
+
+  const showToggleButton = isOverflowing || isNameExpanded;
   
   const totalTime = project.timeSpent;
   const handleEditLog = (log) => {
@@ -2336,7 +2348,7 @@ const ProjectItem = ({
                     className: `project-name ${isNameExpanded ? 'expanded' : ''}`,
                     title: project.name
                  }, project.name),
-                 isNameTruncated && React.createElement('button', {
+                 showToggleButton && React.createElement('button', {
                      className: "more-less-button",
                      onClick: (e) => {
                          e.stopPropagation();
